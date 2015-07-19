@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Pebble Slider</title>
+        <style type="text/css">
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                background-color: #f0f0f0;
+                margin: 10px;
+                padding: 10px;
+            }
+        </style>
+        <link rel="stylesheet" type="text/css" href="pebble-slider.css" />
+        <style type="text/css">
+            .pebble-slider {
+                padding: 0 10px;
+                width: 100%;
+            }
+            .pebble-slider .ps-base .ps-range-rail .ps-range-bar {
+                background-color: red;
+            }
+            .pebble-slider .ps-base .ps-toggle-rail .ps-toggle-neck {
+                background-color: white;
+                opacity: 0.8;
+            }
+            .pebble-slider .ps-base .ps-toggle-rail .ps-toggle-neck .ps-toggle-handle {
+                display: none;
+            }
+        </style>
+        <script type="text/javascript" src="jquery-1.11.3.min.js"></script>
+        <script type="text/javascript" src="jquery.domxy.js"></script>
+        <script type="text/javascript" src="jquery-pebble-slider.js"></script>
+    </head>
+    <body>
+        <p>
+            <input id="range" type="range" min="0" max="100" step="20" />
+            <script type="text/javascript">
+                var range = document.getElementById('range');
+                range.addEventListener('input', function () {
+                    console.log('input: ' + this.value);
+                }, false);
+                range.addEventListener('change', function () {
+                    console.log('change: ' + this.value);
+                }, false);
+            </script>
+        </p>
+        <p id="container" style="padding: 10px;">
+            <script type="text/javascript">
+                var slider = $.createPebbleSlider().attachTo('#container');
+                slider.getElement().css('width', '100%');
+                slider.setOnInputHandler(function (value) {
+                    console.log('input: ' + value);
+                });
+                slider.setOnChangeHandler(function (value) {
+                    console.log('change: ' + value);
+                });
+            </script>
+        </p>
+        <p id="container-2" style="position: absolute; height: 80%;">
+            <span class="pebble-slider ps-vertical-type">
+                <span class="ps-base">
+                    <span class="ps-range-rail">
+                        <span class="ps-range-subrail">
+                            <span class="ps-range-bar"></span>
+                        </span>
+                    </span>
+                    <span class="ps-toggle-overlay">
+                        <span class="ps-toggle-rail">
+                            <span class="ps-toggle-neck">
+                                <span class="ps-toggle-handle"></span>
+                            </span>
+                        </span>
+                    </span>
+                </span>
+            </span>
+        </p>
+    <!--
+        <span class="pebble-slider ps-horizontal ps-wrap">
+            <span class="ps-base">
+                <span class="ps-range-rail">
+                    <span class="ps-range-bar"></span>
+                </span>
+                <span class="ps-toggle-overlay">
+                    <span class="ps-toggle-rail">
+                        <span class="ps-toggle-neck">
+                            <span class="ps-toggle-handle"></span>
+                        </span>
+                    </span>
+                </span>
+            </span>
+        </span>
+    -->
+    </body>
+</html>
