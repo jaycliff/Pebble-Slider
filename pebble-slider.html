@@ -52,10 +52,12 @@
             <script type="text/javascript">
                 var slider = $.createPebbleSlider().attachTo('#container');
                 slider.getElement().css('width', '100%');
-                slider.setOnInputHandler(function (value) {
+                slider.on('input', function (event, value) {
                     console.log('input: ' + value);
                 });
-                slider.setOnChangeHandler(function (value) {
+                slider.on('change', function (event, value) {
+                    //console.log(this);
+                    //console.log(event);
                     console.log('change: ' + value);
                 });
             </script>
@@ -78,7 +80,7 @@
                 </span>
             </span>
         </p>
-    <!--
+        <!--
         <span class="pebble-slider ps-horizontal ps-wrap">
             <span class="ps-base">
                 <span class="ps-range-rail">
@@ -93,6 +95,22 @@
                 </span>
             </span>
         </span>
-    -->
+        -->
+        <p id="container-3">
+            <button type="button">Button</button>
+            <script type="text/javascript">
+                var $button = $('#container-3 button');
+                function buttonHandler() {
+                    console.log('I am a button handler!');
+                    $button.off('click', buttonHandler);
+                }
+                function buttonHandler2() {
+                    console.log('I am another button handler!');
+                }
+                $button.on('click', buttonHandler);
+                $button.on('click', buttonHandler);
+                //$button.off('', 456345);
+            </script>
+        </p>
     </body>
 </html>
