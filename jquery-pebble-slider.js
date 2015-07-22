@@ -20,10 +20,23 @@
 */
 (function (window, $) {
     "use strict";
-    var $document = $(document), $window = $(window);
+    var $document = $(document),
+        $window = $(window),
+        $head = $('head'),
+        $essential_styles = $(document.createElement('style')).attr('type', 'text/css'),
+        list_of_style_content = [
+            '/* Pebble Slider Default Styles */',
+            '.pebble-slider { display: inline-block; height: 10px; width: 150px; }',
+            '/* Pebble Slider Essential Styles */',
+            'body span.pebble-slider.ps-wrap { position: relative !important; }',
+            'body span.pebble-slider.ps-wrap > span.ps-base { border: none !important; bottom: 0 !important; display: block !important; height: auto !important; left: 0 !important; padding: 0px !important; position: absolute !important; right: 0 !important; top: 0 !important; width: auto !important; }',
+            'body span.pebble-slider.ps-wrap > span.ps-base > span.ps-range-rail { display: block !important; overflow: hidden !important; padding: 0px !important; position: absolute !important; }',
+            'body span.pebble-slider.ps-wrap > span.ps-base > span.ps-range-rail > span.ps-range-subrail, body span.pebble-slider.ps-wrap > span.ps-base > span.ps-range-rail > span.ps-range-subrail > span.ps-range-bar { display: block !important; position: absolute !important; }',
+            'body span.pebble-slider.ps-wrap > span.ps-base > span.ps-toggle-overlay { border: none !important; margin: 0px !important; padding: 0px !important; }'
+        ];
+    //$head.append($essential_styles.text(list_of_style_content.join('\r\n')));
     $.createPebbleSlider = function () {
         var $ps_wrap = $(document.createElement('span')),
-            $ps_subwrap = $(document.createElement('span')),
             $ps_base = $(document.createElement('span')),
             $ps_range_rail = $(document.createElement('span')),
             $ps_range_subrail = $(document.createElement('span')),
@@ -47,19 +60,17 @@
             pebble_slider_object,
             $pebble_slider_object;
         function initializeParts() {
-            $ps_wrap.addClass('pebble-slider').addClass('ps-horizontal-type').addClass('ps-wrap').attr('tabindex', tabindex).attr('style', 'position: relative !important;');
-            $ps_subwrap.addClass('ps-subwrap').attr('style', 'position: absolute; bottom: 0; left: 0; right: 0; top: 0; padding: 0px !important; border: none !important;');
-            $ps_base.addClass('ps-base').attr('style', 'padding: 0px !important; margin: 0px !important; border: none !important;');
+            $ps_wrap.addClass('pebble-slider').addClass('ps-horizontal-type').addClass('ps-wrap').attr('tabindex', tabindex);
+            $ps_base.addClass('ps-base');
             $ps_range_rail.addClass('ps-range-rail');
             $ps_range_subrail.addClass('ps-range-subrail');
             $ps_range_bar.addClass('ps-range-bar');
-            $ps_toggle_overlay.addClass('ps-toggle-overlay').attr('style', 'padding: 0px !important; margin: 0px !important; border: none !important;');
+            $ps_toggle_overlay.addClass('ps-toggle-overlay');
             $ps_toggle_rail.addClass('ps-toggle-rail');
             $ps_toggle_neck.addClass('ps-toggle-neck');
             $ps_toggle_handle.addClass('ps-toggle-handle');
             // Connect the parts
-            $ps_wrap.append($ps_subwrap);
-            $ps_subwrap.append($ps_base);
+            $ps_wrap.append($ps_base);
             $ps_base.append($ps_range_rail);
             $ps_range_rail.append($ps_range_subrail);
             $ps_range_subrail.append($ps_range_bar);
@@ -273,16 +284,15 @@
                 if (parentNode !== null) {
                     $ps_wrap.detach();
                 }
-                $ps_wrap.attr('class', '').attr('style', '').removeAttr('tabindex');
-                $ps_subwrap.attr('class', '').attr('style', '');
-                $ps_base.attr('class', '').attr('style', '');
-                $ps_range_rail.attr('class', '').attr('style', '');
-                $ps_range_subrail.attr('class', '').attr('style', '');
-                $ps_range_bar.attr('class', '').attr('style', '');
-                $ps_toggle_overlay.attr('class', '').attr('style', '');
-                $ps_toggle_rail.attr('class', '').attr('style', '');
-                $ps_toggle_neck.attr('class', '').attr('style', '');
-                $ps_toggle_handle.attr('class', '').attr('style', '');
+                $ps_wrap.removeAttr('class').removeAttr('style').removeAttr('tabindex');
+                $ps_base.removeAttr('class').removeAttr('style');
+                $ps_range_rail.removeAttr('class').removeAttr('style');
+                $ps_range_subrail.removeAttr('class').removeAttr('style');
+                $ps_range_bar.removeAttr('class').removeAttr('style');
+                $ps_toggle_overlay.removeAttr('class').removeAttr('style');
+                $ps_toggle_rail.removeAttr('class').removeAttr('style');
+                $ps_toggle_neck.removeAttr('class').removeAttr('style');
+                $ps_toggle_handle.removeAttr('class').removeAttr('style');
                 initializeParts();
                 if (parentNode !== null) {
                     $ps_wrap.appendTo(parentNode);
@@ -292,7 +302,7 @@
                 if (disabled === true) {
                     disabled = false;
                     $ps_wrap.removeClass('disabled').attr('tabindex', tabindex);
-                    $ps_subwrap.off('mousedown', enableDisableAid).on('mousedown', mouseDownMouseMoveHandler);
+                    $ps_base.off('mousedown', enableDisableAid).on('mousedown', mouseDownMouseMoveHandler);
                 }
                 return pebble_slider_object;
             };
@@ -303,7 +313,7 @@
                         docWinEventHandler(); // Manually trigger the 'mouseup / window blur' event handler
                     }
                     $ps_wrap.addClass('disabled').removeAttr('tabindex');
-                    $ps_subwrap.off('mousedown', mouseDownMouseMoveHandler).on('mousedown', enableDisableAid);
+                    $ps_base.off('mousedown', mouseDownMouseMoveHandler).on('mousedown', enableDisableAid);
                     removeTransitionClass();
                 }
                 return pebble_slider_object;
@@ -339,7 +349,6 @@
                 if (Boolean(hard) === true) {
                     resetStructure();
                     $ps_wrap.off();
-                    $ps_subwrap.off();
                     $ps_base.off();
                     $ps_range_rail.off();
                     $ps_range_subrail.off();

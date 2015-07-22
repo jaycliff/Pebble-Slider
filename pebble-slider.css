@@ -24,7 +24,7 @@
 }
 .pebble-slider .ps-base {
     height: 100%;
-    position: relative;
+    position: absolute;
     width: 100%;
 }
 .pebble-slider .ps-range-rail {

@@ -10,39 +10,58 @@
             }
             body {
                 background-color: #f0f0f0;
-                margin: 10px;
                 padding: 10px;
             }
         </style>
         <link rel="stylesheet" type="text/css" href="pebble-slider.css" />
         <style type="text/css">
-            .pebble-slider {
-                padding: 0 10px;
-                width: 100%;
-            }
-            .pebble-slider .ps-base .ps-range-rail .ps-range-bar {
-                background-color: red;
-            }
-            .pebble-slider .ps-base .ps-toggle-rail .ps-toggle-neck {
-                background-color: white;
-                opacity: 0.8;
-                width: 22px;
-                height: 22px;
-                border: solid 2px green;
-                border-radius: 100%;
-            }
-            .pebble-slider .ps-base .ps-toggle-rail .ps-toggle-neck {
-                width: 30px;
-                height: 30px;
-                opacity: 0.8;
-                background-color: white;
-                border: solid 1px #f0f0f0;
-                border-radius: 100%;
-                box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-            }
-            .pebble-slider .ps-base .ps-toggle-rail .ps-toggle-neck .ps-toggle-handle {
-                display: none;
-            }
+/* Pebble Slider Default Styles */
+.pebble-slider {
+    display: inline-block;
+    height: 10px;
+    width: 150px;
+}
+.pebble-slider .ps-toggle-neck {
+    height: 10px;
+    margin-left: -5px;
+    margin-top: 5px;
+    width: 10px;
+}
+/* Pebble Slider Essential Styles */
+body span.pebble-slider.ps-wrap {
+    position: relative !important;
+}
+body span.pebble-slider.ps-wrap > span.ps-base {
+    border: none !important;
+    bottom: 0 !important;
+    display: block !important;
+    height: auto !important;
+    left: 0 !important;
+    padding: 0 !important;
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+    width: auto !important;
+}
+body span.pebble-slider.ps-wrap > span.ps-base > span.ps-range-rail {
+    display: block !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    position: absolute !important;
+}
+body span.pebble-slider.ps-wrap > span.ps-base > span.ps-range-rail > span.ps-range-subrail,
+body span.pebble-slider.ps-wrap > span.ps-base > span.ps-range-rail > span.ps-range-subrail > span.ps-range-bar,
+body span.pebble-slider.ps-wrap > span.ps-base > span.ps-toggle-overlay > span.ps-toggle-rail > span.ps-toggle-neck {
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+}
+body span.pebble-slider.ps-wrap > span.ps-base > span.ps-toggle-overlay {
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute !important;
+}
         </style>
         <script type="text/javascript" src="jquery-1.11.3.min.js"></script>
         <script type="text/javascript" src="jquery.domxy.js"></script>
@@ -61,10 +80,10 @@
                 }, false);
             </script>
         </p>
-        <p id="container" style="padding: 10px;">
+        <p id="container" style="padding: 0px;">
             <script type="text/javascript">
                 var slider = $.createPebbleSlider().attachTo('#container');
-                slider.getElement().css('width', '100%');
+                slider.getElement().css('width', '90%');
                 slider.on('input', function (event, value) {
                     console.log('input: ' + value);
                 });
@@ -78,8 +97,8 @@
                 });
             </script>
         </p>
-        <p id="container-2" style="position: absolute; height: 80%; display: none;">
-            <span class="pebble-slider ps-vertical-type">
+        <p id="container-2" style="position: absolute; height: 80%; display: block;">
+            <span class="pebble-slider ps-vertical-type ps-wrap">
                 <span class="ps-base">
                     <span class="ps-range-rail">
                         <span class="ps-range-subrail">
