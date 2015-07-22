@@ -44,15 +44,16 @@
             value = (min_value >= max_value) ? min_value : (min_value + ((max_value - min_value) / 2)),
             prev_input_value = value,
             prev_change_value = value,
-            pebble_slider_object;
+            pebble_slider_object,
+            $pebble_slider_object;
         function initializeParts() {
             $ps_wrap.addClass('pebble-slider').addClass('ps-horizontal-type').addClass('ps-wrap').attr('tabindex', tabindex).attr('style', 'position: relative !important;');
-            $ps_subwrap.addClass('ps-subwrap').attr('style', 'position: absolute; bottom: 0; left: 0; right: 0; top: 0; padding: 0px !important;');
-            $ps_base.addClass('ps-base').attr('style', 'padding: 0px !important; margin: 0px !important');
+            $ps_subwrap.addClass('ps-subwrap').attr('style', 'position: absolute; bottom: 0; left: 0; right: 0; top: 0; padding: 0px !important; border: none !important;');
+            $ps_base.addClass('ps-base').attr('style', 'padding: 0px !important; margin: 0px !important; border: none !important;');
             $ps_range_rail.addClass('ps-range-rail');
             $ps_range_subrail.addClass('ps-range-subrail');
             $ps_range_bar.addClass('ps-range-bar');
-            $ps_toggle_overlay.addClass('ps-toggle-overlay');
+            $ps_toggle_overlay.addClass('ps-toggle-overlay').attr('style', 'padding: 0px !important; margin: 0px !important; border: none !important;');
             $ps_toggle_rail.addClass('ps-toggle-rail');
             $ps_toggle_neck.addClass('ps-toggle-neck');
             $ps_toggle_handle.addClass('ps-toggle-handle');
@@ -79,6 +80,19 @@
             $ps_base.removeClass('ps-transition').off('transitionend', removeTransitionClass);
             transition_class_added = false;
         }
+        function updateStructure() {
+            var offset_hor, offset_ver;
+            if ($ps_wrap[0].parentNode === null) {
+                return; // Bail out since it's not attached to the DOM
+            }
+            offset_hor = ($ps_toggle_neck.outerWidth() / 2);
+            offset_ver = ($ps_toggle_neck.outerHeight() / 2);
+            $ps_toggle_neck
+                .css('margin-left', ((offset_hor > 0) ? '-' + offset_hor : 0) + 'px')
+                .css('margin-top', (($ps_range_rail.outerHeight() / 2) - offset_ver) + 'px');
+            $ps_range_subrail.attr('style', 'left: ' + (offset_hor - parseInt($ps_range_rail.css('border-left'), 10)) + 'px !important; right: ' + (offset_hor - parseInt($ps_range_rail.css('border-right'), 10)) + 'px !important;');
+            $ps_toggle_rail.attr('style', 'left: ' + offset_hor + 'px !important; right: ' + offset_hor + 'px !important;');
+        }
         function refreshControls(animate) {
             var left_rate;
             if ($ps_wrap[0].parentNode === null) {
@@ -92,8 +106,8 @@
             $ps_toggle_neck.css('left', (left_rate * 100) + '%');
             return pebble_slider_object;
         }
-        // Create the pebble slider object
-        pebble_slider_object = {
+        // Create the jQueryfied pebble slider object (http://api.jquery.com/jQuery/#working-with-plain-objects)
+        $pebble_slider_object = $({
             setMinValue: function (val) {
                 min_value = Number(val) || 0;
                 if (max_value <= min_value) {
@@ -143,13 +157,16 @@
             attachTo: function (arg) {
                 $ps_wrap.appendTo(arg);
                 removeTransitionClass();
+                updateStructure();
                 refreshControls();
                 return pebble_slider_object;
             },
+            updateStructure: updateStructure,
             getElement: function () {
                 return $ps_wrap;
             }
-        };
+        });
+        pebble_slider_object = $pebble_slider_object[0];
         Object.defineProperty($ps_wrap[0], 'value', {
             get: function () {
                 return value;
@@ -224,7 +241,7 @@
                 if (disabled === false) {
                     if (value !== prev_input_value) {
                         trigger_param_list.push(value);
-                        $ps_wrap.trigger('input', trigger_param_list);
+                        $pebble_slider_object.triggerHandler('input', trigger_param_list);
                         trigger_param_list.length = 0;
                     }
                 }
@@ -235,7 +252,7 @@
                 if (disabled === false) {
                     if (prev_change_value !== value) {
                         trigger_param_list.push(value);
-                        $ps_wrap.trigger('change', trigger_param_list);
+                        $pebble_slider_object.triggerHandler('change', trigger_param_list);
                         trigger_param_list.length = 0;
                         prev_change_value = value;
                     }
@@ -256,16 +273,16 @@
                 if (parentNode !== null) {
                     $ps_wrap.detach();
                 }
-                $ps_wrap.removeAttr('class').removeAttr('tabindex').removeAttr('style');
-                $ps_subwrap.removeAttr('class').removeAttr('style');
-                $ps_base.removeAttr('class').removeAttr('style');
-                $ps_range_rail.removeAttr('class').removeAttr('style');
-                $ps_range_subrail.removeAttr('class').removeAttr('style');
-                $ps_range_bar.removeAttr('class').removeAttr('style');
-                $ps_toggle_overlay.removeAttr('class').removeAttr('style');
-                $ps_toggle_rail.removeAttr('class').removeAttr('style');
-                $ps_toggle_neck.removeAttr('class').removeAttr('style');
-                $ps_toggle_handle.removeAttr('class').removeAttr('style');
+                $ps_wrap.attr('class', '').attr('style', '').removeAttr('tabindex');
+                $ps_subwrap.attr('class', '').attr('style', '');
+                $ps_base.attr('class', '').attr('style', '');
+                $ps_range_rail.attr('class', '').attr('style', '');
+                $ps_range_subrail.attr('class', '').attr('style', '');
+                $ps_range_bar.attr('class', '').attr('style', '');
+                $ps_toggle_overlay.attr('class', '').attr('style', '');
+                $ps_toggle_rail.attr('class', '').attr('style', '');
+                $ps_toggle_neck.attr('class', '').attr('style', '');
+                $ps_toggle_handle.attr('class', '').attr('style', '');
                 initializeParts();
                 if (parentNode !== null) {
                     $ps_wrap.appendTo(parentNode);
@@ -305,22 +322,23 @@
                 };
             }());
             pebble_slider_object.on = function () {
-                applier($_proto.on, $ps_wrap, arguments);
+                applier($_proto.on, $pebble_slider_object, arguments);
                 return pebble_slider_object;
             };
             pebble_slider_object.one = function () {
-                applier($_proto.one, $ps_wrap, arguments);
+                applier($_proto.one, $pebble_slider_object, arguments);
                 return pebble_slider_object;
             };
             pebble_slider_object.off = function () {
-                applier($_proto.off, $ps_wrap, arguments);
+                applier($_proto.off, $pebble_slider_object, arguments);
                 return pebble_slider_object;
             };
             pebble_slider_object.reset = function (hard) {
                 pebble_slider_object.disable();
-                $ps_wrap.off();
+                $pebble_slider_object.off();
                 if (Boolean(hard) === true) {
                     resetStructure();
+                    $ps_wrap.off();
                     $ps_subwrap.off();
                     $ps_base.off();
                     $ps_range_rail.off();

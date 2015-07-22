@@ -26,6 +26,19 @@
             .pebble-slider .ps-base .ps-toggle-rail .ps-toggle-neck {
                 background-color: white;
                 opacity: 0.8;
+                width: 22px;
+                height: 22px;
+                border: solid 2px green;
+                border-radius: 100%;
+            }
+            .pebble-slider .ps-base .ps-toggle-rail .ps-toggle-neck {
+                width: 30px;
+                height: 30px;
+                opacity: 0.8;
+                background-color: white;
+                border: solid 1px #f0f0f0;
+                border-radius: 100%;
+                box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
             }
             .pebble-slider .ps-base .ps-toggle-rail .ps-toggle-neck .ps-toggle-handle {
                 display: none;
@@ -56,13 +69,16 @@
                     console.log('input: ' + value);
                 });
                 slider.on('change', function (event, value) {
-                    //console.log(this);
-                    //console.log(event);
-                    console.log('change: ' + value);
+                    event.preventDefault();
+                    //event.stopImmediatePropagation();
+                    console.log(this);
+                    console.log(event);
+                    console.log('change: ' + this.getValue());
+                    console.log('change2: ' + value);
                 });
             </script>
         </p>
-        <p id="container-2" style="position: absolute; height: 80%;">
+        <p id="container-2" style="position: absolute; height: 80%; display: none;">
             <span class="pebble-slider ps-vertical-type">
                 <span class="ps-base">
                     <span class="ps-range-rail">
