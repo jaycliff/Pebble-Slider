@@ -12,8 +12,12 @@
                 background-color: #f0f0f0;
                 padding: 10px;
             }
+
+            .pebble-slider.ps-wrap .ps-base .ps-range-rail {
+                border: solid 1px #a0a0a0;
+            }
         </style>
-        <link rel="stylesheet" type="text/css" href="pebble-slider.css" />
+        <!-- <link rel="stylesheet" type="text/css" href="pebble-slider.css" /> -->
         <style type="text/css">
 /* Pebble Slider Default Styles */
 .pebble-slider {
@@ -21,12 +25,116 @@
     height: 10px;
     width: 150px;
 }
+.pebble-slider.disabled {
+    opacity: 0.5;
+}
+.pebble-slider.ps-wrap .ps-base .ps-range-rail {
+    background-color: #d0d0d0;
+}
+.pebble-slider.ps-wrap .ps-base .ps-range-bar {
+    background-color: #a0a0a0;
+}
 .pebble-slider .ps-toggle-neck {
     height: 10px;
-    margin-left: -5px;
-    margin-top: 5px;
     width: 10px;
+    background-color: #404040;
 }
+.pebble-slider .ps-toggle-handle {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.pebble-slider.ps-horizontal-type {
+    height: 20px;
+    width: 300px;
+}
+.pebble-slider.ps-horizontal-type .ps-range-rail {
+    bottom: 25%;
+    top: 25%;
+}
+.pebble-slider.ps-horizontal-type .ps-range-subrail {
+    left: 5px;
+    right: 5px;
+    top: 0;
+}
+.pebble-slider.ps-horizontal-type .ps-range-bar {
+    left: auto;
+    opacity: 1;
+    right: 100%;
+    top: 0;
+}
+.pebble-slider.ps-horizontal-type .ps-toggle-rail {
+    bottom: 25%;
+    left: 5px;
+    right: 5px;
+    top: 25%;
+}
+.pebble-slider.ps-horizontal-type .ps-toggle-neck {
+    margin-left: -5px;
+}
+.pebble-slider.ps-horizontal-type .ps-base.ps-transition .ps-range-bar {
+    transition: right 0.2s;
+    -moz-transition: right 0.2s;
+    -webkit-transition: right 0.2s;
+    -ms-transition: right 0.2s;
+    -o-transition: right 0.2s;
+}
+.pebble-slider.ps-horizontal-type .ps-base.ps-transition .ps-toggle-neck {
+    transition: left 0.2s;
+    -moz-transition: left 0.2s;
+    -webkit-transition: left 0.2s;
+    -ms-transition: left 0.2s;
+    -o-transition: left 0.2s;
+}
+
+/* Vertical slider */
+.pebble-slider.ps-vertical-type {
+    height: 100%;
+    padding: 10px 0;
+    width: 20px;
+}
+.pebble-slider.ps-vertical-type .ps-range-rail {
+    bottom: 0;
+    left: 25%;
+    right: 25%;
+    top: 0;
+}
+.pebble-slider.ps-vertical-type .ps-range-subrail {
+    bottom: 5px;
+    left: 0;
+    top: 5px;
+    width: 100%;
+}
+.pebble-slider.ps-vertical-type .ps-range-bar {
+    width: 100%;
+    height: 150%;
+    left: 0;
+    top: auto;
+}
+.pebble-slider.ps-vertical-type .ps-toggle-rail {
+    bottom: 5px;
+    left: 25%;
+    right: 25%;
+    top: 5px;
+}
+.pebble-slider.ps-vertical-type .ps-toggle-neck {
+    margin-top: -5px;
+}
+.pebble-slider.ps-vertical-type .ps-base.ps-transition .ps-range-bar {
+    transition: top 0.2s;
+    -moz-transition: top 0.2s;
+    -webkit-transition: top 0.2s;
+    -ms-transition: top 0.2s;
+    -o-transition: top 0.2s;
+}
+.pebble-slider.ps-vertical-type .ps-base.ps-transition .ps-toggle-neck {
+    transition: top 0.2s;
+    -moz-transition: top 0.2s;
+    -webkit-transition: top 0.2s;
+    -ms-transition: top 0.2s;
+    -o-transition: top 0.2s;
+}
+
 /* Pebble Slider Essential Styles */
 body span.pebble-slider.ps-wrap {
     position: relative !important;
@@ -37,6 +145,7 @@ body span.pebble-slider.ps-wrap > span.ps-base {
     display: block !important;
     height: auto !important;
     left: 0 !important;
+    margin: 0 !important;
     padding: 0 !important;
     position: absolute !important;
     right: 0 !important;
@@ -45,6 +154,7 @@ body span.pebble-slider.ps-wrap > span.ps-base {
 }
 body span.pebble-slider.ps-wrap > span.ps-base > span.ps-range-rail {
     display: block !important;
+    margin: 0 !important;
     overflow: hidden !important;
     padding: 0 !important;
     position: absolute !important;
@@ -54,13 +164,45 @@ body span.pebble-slider.ps-wrap > span.ps-base > span.ps-range-rail > span.ps-ra
 body span.pebble-slider.ps-wrap > span.ps-base > span.ps-toggle-overlay > span.ps-toggle-rail > span.ps-toggle-neck {
     display: block !important;
     position: absolute !important;
-    top: 0 !important;
 }
 body span.pebble-slider.ps-wrap > span.ps-base > span.ps-toggle-overlay {
     border: none !important;
+    bottom: 0 !important;
+    display: block !important;
+    left: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+}
+body span.pebble-slider.ps-wrap > span.ps-base > span.ps-toggle-overlay > span.ps-toggle-rail {
+    display: block !important;
+    position: absolute !important;
+}
+body span.pebble-slider.ps-wrap.ps-horizontal-type > span.ps-base > span.ps-range-rail {
+    left: 0 !important;
+    right: 0 !important;
+}
+body span.pebble-slider.ps-wrap.ps-horizontal-type > span.ps-base > span.ps-range-rail > span.ps-range-subrail,
+body span.pebble-slider.ps-wrap.ps-horizontal-type > span.ps-base > span.ps-range-rail > span.ps-range-subrail > span.ps-range-bar {
+    height: 100% !important;
+    top: 0 !important;
+}
+body span.pebble-slider.ps-wrap.ps-horizontal-type > span.ps-base > span.ps-range-rail > span.ps-range-subrail > span.ps-range-bar {
+    width: 150% !important;
+}
+body span.pebble-slider.ps-wrap.ps-vertical-type > span.ps-base > span.ps-range-rail {
+    bottom: 0 !important;
+    top: 0 !important;
+}
+body span.pebble-slider.ps-wrap.ps-vertical-type > span.ps-base > span.ps-range-rail > span.ps-range-subrail,
+body span.pebble-slider.ps-wrap.ps-vertical-type > span.ps-base > span.ps-range-rail > span.ps-range-subrail > span.ps-range-bar {
+    width: 100% !important;
+    left: 0 !important;
+}
+body span.pebble-slider.ps-wrap.ps-vertical-type > span.ps-base > span.ps-range-rail > span.ps-range-subrail > span.ps-range-bar {
+    height: 150% !important;
 }
         </style>
         <script type="text/javascript" src="jquery-1.11.3.min.js"></script>
@@ -78,6 +220,22 @@ body span.pebble-slider.ps-wrap > span.ps-base > span.ps-toggle-overlay {
                 range.addEventListener('change', function () {
                     console.log('change: ' + this.value);
                 }, false);
+            </script>
+        </p>
+        <p id="container-3">
+            <button type="button">Button</button>
+            <script type="text/javascript">
+                var $button = $('#container-3 button');
+                function buttonHandler() {
+                    console.log('I am a button handler!');
+                    $button.off('click', buttonHandler);
+                }
+                function buttonHandler2() {
+                    console.log('I am another button handler!');
+                }
+                $button.on('click', buttonHandler);
+                $button.on('click', buttonHandler);
+                //$button.off('', 456345);
             </script>
         </p>
         <p id="container" style="padding: 0px;">
@@ -131,21 +289,5 @@ body span.pebble-slider.ps-wrap > span.ps-base > span.ps-toggle-overlay {
             </span>
         </span>
         -->
-        <p id="container-3">
-            <button type="button">Button</button>
-            <script type="text/javascript">
-                var $button = $('#container-3 button');
-                function buttonHandler() {
-                    console.log('I am a button handler!');
-                    $button.off('click', buttonHandler);
-                }
-                function buttonHandler2() {
-                    console.log('I am another button handler!');
-                }
-                $button.on('click', buttonHandler);
-                $button.on('click', buttonHandler);
-                //$button.off('', 456345);
-            </script>
-        </p>
     </body>
 </html>

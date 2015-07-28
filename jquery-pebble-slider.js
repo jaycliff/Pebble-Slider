@@ -18,7 +18,15 @@
         jQuery library
         domxy
 */
-(function (window, $) {
+if (typeof Number.toInteger !== "function") {
+    Number.toInteger = function (arg) {
+        "use strict";
+        // ToInteger conversion
+        arg = Number(arg);
+        return (arg !== arg) ? 0 : (arg === 0 || arg === Infinity || arg === -Infinity) ? arg : (arg > 0) ? Math.floor(arg) : Math.ceil(arg);
+    };
+}
+(function (window, $, undefined) {
     "use strict";
     var $document = $(document),
         $window = $(window),
@@ -103,6 +111,7 @@
                 .css('margin-top', (($ps_range_rail.outerHeight() / 2) - offset_ver) + 'px');
             $ps_range_subrail.attr('style', 'left: ' + (offset_hor - parseInt($ps_range_rail.css('border-left'), 10)) + 'px !important; right: ' + (offset_hor - parseInt($ps_range_rail.css('border-right'), 10)) + 'px !important;');
             $ps_toggle_rail.attr('style', 'left: ' + offset_hor + 'px !important; right: ' + offset_hor + 'px !important;');
+            return pebble_slider_object;
         }
         function refreshControls(animate) {
             var left_rate;
@@ -119,6 +128,11 @@
         }
         // Create the jQueryfied pebble slider object (http://api.jquery.com/jQuery/#working-with-plain-objects)
         $pebble_slider_object = $({
+            setTabIndex: function (index) {
+                index = Number.toInteger(index);
+                $ps_wrap.attr('tabindex', index);
+                return pebble_slider_object;
+            },
             setMinValue: function (val) {
                 min_value = Number(val) || 0;
                 if (max_value <= min_value) {
