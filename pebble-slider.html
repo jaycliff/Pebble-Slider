@@ -16,6 +16,12 @@
             .pebble-slider.ps-wrap .ps-base .ps-range-rail {
                 border: solid 1px #a0a0a0;
             }
+
+            .pebble-slider.ps-wrap .ps-base .ps-toggle-neck {
+                width: 20px;
+                height: 20px;
+                border-radius: 20px;
+            }
         </style>
         <!-- <link rel="stylesheet" type="text/css" href="pebble-slider.css" /> -->
         <style type="text/css">
@@ -64,9 +70,9 @@
     top: 0;
 }
 .pebble-slider.ps-horizontal-type .ps-toggle-rail {
-    bottom: 25%;
     left: 5px;
     right: 5px;
+    bottom: 25%;
     top: 25%;
 }
 .pebble-slider.ps-horizontal-type .ps-toggle-neck {
@@ -119,6 +125,7 @@
 }
 .pebble-slider.ps-vertical-type .ps-toggle-neck {
     margin-top: -5px;
+    left: 25%;
 }
 .pebble-slider.ps-vertical-type .ps-base.ps-transition .ps-range-bar {
     transition: top 0.2s;
@@ -192,6 +199,12 @@ body span.pebble-slider.ps-wrap.ps-horizontal-type > span.ps-base > span.ps-rang
 body span.pebble-slider.ps-wrap.ps-horizontal-type > span.ps-base > span.ps-range-rail > span.ps-range-subrail > span.ps-range-bar {
     width: 150% !important;
 }
+/*
+body span.pebble-slider.ps-wrap.ps-horizontal-type > span.ps-base > span.ps-toggle-overlay > span.ps-toggle-rail {
+    bottom: 0 !important;
+    top: 0 !important;
+}
+*/
 body span.pebble-slider.ps-wrap.ps-vertical-type > span.ps-base > span.ps-range-rail {
     bottom: 0 !important;
     top: 0 !important;
@@ -204,6 +217,12 @@ body span.pebble-slider.ps-wrap.ps-vertical-type > span.ps-base > span.ps-range-
 body span.pebble-slider.ps-wrap.ps-vertical-type > span.ps-base > span.ps-range-rail > span.ps-range-subrail > span.ps-range-bar {
     height: 150% !important;
 }
+/*
+body span.pebble-slider.ps-wrap.ps-vertical-type > span.ps-base > span.ps-toggle-overlay > span.ps-toggle-rail {
+    left: 0 !important;
+    right: 0 !important;
+}
+*/
         </style>
         <script type="text/javascript" src="jquery-1.11.3.min.js"></script>
         <script type="text/javascript" src="jquery.domxy.js"></script>

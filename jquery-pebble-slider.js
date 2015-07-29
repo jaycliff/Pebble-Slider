@@ -104,11 +104,13 @@ if (typeof Number.toInteger !== "function") {
             if ($ps_wrap[0].parentNode === null) {
                 return; // Bail out since it's not attached to the DOM
             }
+            //$ps_toggle_neck.css('width', $ps_toggle_neck.height());
             offset_hor = ($ps_toggle_neck.outerWidth() / 2);
             offset_ver = ($ps_toggle_neck.outerHeight() / 2);
             $ps_toggle_neck
                 .css('margin-left', ((offset_hor > 0) ? '-' + offset_hor : 0) + 'px')
-                .css('margin-top', (($ps_range_rail.outerHeight() / 2) - offset_ver) + 'px');
+                //.css('margin-top', (($ps_toggle_rail.outerHeight() / 2) - offset_ver) + 'px');
+                .css('top', (((($ps_toggle_rail.outerHeight() / 2) - offset_ver) / $ps_toggle_rail.outerHeight()) * 100) + '%');
             $ps_range_subrail.attr('style', 'left: ' + (offset_hor - parseInt($ps_range_rail.css('border-left'), 10)) + 'px !important; right: ' + (offset_hor - parseInt($ps_range_rail.css('border-right'), 10)) + 'px !important;');
             $ps_toggle_rail.attr('style', 'left: ' + offset_hor + 'px !important; right: ' + offset_hor + 'px !important;');
             return pebble_slider_object;

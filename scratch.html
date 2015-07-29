@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Pebble Slider</title>
+        <style type="text/css">
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                background-color: #f0f0f0;
+                padding: 10px;
+            }
+
+            .pebble-slider.ps-wrap .ps-range-rail {
+                border: solid 1px #a0a0a0;
+            }
+        </style>
+        <!-- <link rel="stylesheet" type="text/css" href="pebble-slider.css" /> -->
+        <style type="text/css">
+/* Pebble Slider Default Styles */
+.pebble-slider {
+    background-color: pink;
+    display: inline-block;
+    height: 20px;
+    padding: 0 10px;
+    position: relative;
+    width: 300px;
+}
+
+.pebble-slider .ps-subwrap {
+    display: block;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.pebble-slider .ps-range-overlay {
+    bottom: 0;
+    display: block;
+    left: 0;
+    overflow: hidden;
+    padding: 0 !important;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.pebble-slider .ps-range-base {
+    display: table;
+    height: 100%;
+    width: 100%;
+}
+
+.pebble-slider .ps-range-aligner {
+    bottom: 0;
+    display: table-cell;
+    padding: 0;
+    vertical-align: middle;
+}
+
+.pebble-slider .ps-range-sizer {
+    display: block;
+    height: 10px;
+    position: relative;
+    width: 100%;
+}
+
+.pebble-slider .ps-range-rail {
+    bottom: 0;
+    display: block;
+    left: 0;
+    overflow: hidden;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.pebble-slider .ps-range-limiter {
+    bottom: 0;
+    display: block;
+    left: 10px;
+    position: absolute;
+    right: 10px;
+    top: 0;
+}
+
+.pebble-slider .ps-range-bar {
+    background-color: #c0c0c0;
+    bottom: 0;
+    display: block;
+    left: auto;
+    position: absolute;
+    right: 50%;
+    top: 0;
+    width: 150%;
+}
+
+.pebble-slider .ps-toggle-overlay-and-limiter {
+    bottom: 0;
+    display: block;
+    left: 10px;
+    position: absolute;
+    right: 10px;
+    top: 0;
+}
+
+.pebble-slider .ps-toggle-wrap {
+    display: table;
+    width: 100%;
+    height: 100%;
+}
+
+.pebble-slider .ps-toggle-rail {
+    display: table-cell;
+    padding: 0 !important;
+    position: relative;
+    vertical-align: middle;
+}
+
+.pebble-slider .ps-toggle-neck {
+    background-color: rgba(0, 0, 0, 0.8);
+    display: block;
+    height: 40px;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -20px;
+    opacity: 0.8;
+    position: absolute;
+    top: auto !important;
+    width: 20px;
+}
+        </style>
+        <script type="text/javascript" src="jquery-1.11.3.min.js"></script>
+        <script type="text/javascript" src="jquery.domxy.js"></script>
+        <script type="text/javascript" src="jquery-pebble-slider.js"></script>
+    </head>
+    <body>
+        <p>
+            <input id="range" type="range" min="0" max="100" step="20" style="height: 25px;" />
+            <script type="text/javascript">
+                var range = document.getElementById('range');
+                range.addEventListener('input', function () {
+                    console.log('input: ' + this.value);
+                }, false);
+                range.addEventListener('change', function () {
+                    console.log('change: ' + this.value);
+                }, false);
+            </script>
+        </p>
+        <p id="container">
+            <span class="pebble-slider ps-horizontal ps-wrap">
+                <span class="ps-subwrap">
+                    <span class="ps-range-overlay">
+                        <span class="ps-range-base">
+                            <span class="ps-range-aligner">
+                                <span class="ps-range-sizer">
+                                    <span class="ps-range-rail">
+                                        <span class="ps-range-limiter">
+                                            <span class="ps-range-bar"></span>
+                                        </span>
+                                    </span>
+                                </span>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="ps-toggle-overlay-and-limiter">
+                        <span class="ps-toggle-wrap">
+                            <span class="ps-toggle-rail">
+                                <span class="ps-toggle-neck">
+                                    <span class="ps-toggle-handle"></span>
+                                </span>
+                            </span>
+                        </span>
+                    </span>
+                </span>
+            </span>
+        </p>
+    </body>
+</html>
