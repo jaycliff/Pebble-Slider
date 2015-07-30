@@ -23,13 +23,11 @@
 .pebble-slider {
     background-color: pink;
     display: inline-block;
-    height: 20px;
-    padding: 0 10px;
     position: relative;
-    width: 300px;
 }
 
 .pebble-slider .ps-subwrap {
+    border: none !important;
     display: block;
     height: 100%;
     left: 0;
@@ -56,17 +54,19 @@
 }
 
 .pebble-slider .ps-range-aligner {
-    bottom: 0;
+    border: none !important;
     display: table-cell;
+    height: 100%;
     padding: 0;
+    /* position relative allows 100% height */
+    position: relative;
     vertical-align: middle;
+    width: 100%;
 }
 
 .pebble-slider .ps-range-sizer {
     display: block;
-    height: 10px;
     position: relative;
-    width: 100%;
 }
 
 .pebble-slider .ps-range-rail {
@@ -80,32 +80,19 @@
 }
 
 .pebble-slider .ps-range-limiter {
-    bottom: 0;
     display: block;
-    left: 10px;
     position: absolute;
-    right: 10px;
-    top: 0;
 }
 
 .pebble-slider .ps-range-bar {
     background-color: #c0c0c0;
-    bottom: 0;
     display: block;
-    left: auto;
     position: absolute;
-    right: 50%;
-    top: 0;
-    width: 150%;
 }
 
 .pebble-slider .ps-toggle-overlay-and-limiter {
-    bottom: 0;
     display: block;
-    left: 10px;
     position: absolute;
-    right: 10px;
-    top: 0;
 }
 
 .pebble-slider .ps-toggle-wrap {
@@ -115,23 +102,123 @@
 }
 
 .pebble-slider .ps-toggle-rail {
+    border: none !important;
     display: table-cell;
+    height: 100%;
     padding: 0 !important;
     position: relative;
     vertical-align: middle;
+    width: 100%;
 }
 
 .pebble-slider .ps-toggle-neck {
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: black;
     display: block;
+    opacity: 0.65;
+    position: absolute;
+}
+
+.pebble-slider .ps-toggle-handle {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.pebble-slider.ps-horizontal-type {
+    height: 20px;
+    padding: 0 10px;
+    width: 300px;
+}
+
+.pebble-slider.ps-horizontal-type .ps-range-sizer {
+    height: 50%;
+    max-height: 100%;
+    width: 100%;
+}
+
+.pebble-slider.ps-horizontal-type .ps-range-limiter {
+    bottom: 0;
+    left: 10px;
+    right: 10px;
+    top: 0;
+}
+
+.pebble-slider.ps-horizontal-type .ps-range-bar {
+    bottom: 0;
+    left: auto !important;
+    right: 50%;
+    top: 0;
+    width: 150%;
+}
+
+.pebble-slider.ps-horizontal-type .ps-toggle-overlay-and-limiter {
+    bottom: 0;
+    left: 10px;
+    right: 10px;
+    top: 0;
+}
+
+.pebble-slider.ps-horizontal-type .ps-toggle-neck {
     height: 40px;
     left: 50%;
     margin-left: -10px;
     margin-top: -20px;
-    opacity: 0.8;
-    position: absolute;
+    right: auto !important;
     top: auto !important;
     width: 20px;
+}
+
+.pebble-slider.ps-vertical-type {
+    height: 300px;
+    padding: 10px 0;
+    width: 20px;
+}
+
+.pebble-slider.ps-vertical-type .ps-range-sizer {
+    height: 100%;
+    margin: 0 auto !important;
+    max-width: 100%;
+    width: 50%;
+}
+
+.pebble-slider.ps-vertical-type .ps-range-limiter {
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    top: 10px;
+}
+
+.pebble-slider.ps-vertical-type .ps-range-bar {
+    bottom: auto !important;
+    height: 150%;
+    left: 0;
+    right: 0;
+    top: 50%;
+}
+
+.pebble-slider.ps-vertical-type .ps-toggle-overlay-and-limiter {
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    top: 10px;
+}
+
+.pebble-slider.ps-vertical-type .ps-range-base,
+.pebble-slider.ps-vertical-type .ps-range-aligner,
+.pebble-slider.ps-vertical-type .ps-toggle-wrap,
+.pebble-slider.ps-vertical-type .ps-toggle-rail {
+    display: block;
+}
+
+.pebble-slider.ps-vertical-type .ps-toggle-neck {
+    bottom: auto !important;
+    height: 20px;
+    left: 50% !important;
+    margin-left: -20px;
+    margin-top: -10px;
+    right: auto !important;
+    top: 50%;
+    width: 40px;
 }
         </style>
         <script type="text/javascript" src="jquery-1.11.3.min.js"></script>
@@ -139,20 +226,8 @@
         <script type="text/javascript" src="jquery-pebble-slider.js"></script>
     </head>
     <body>
-        <p>
-            <input id="range" type="range" min="0" max="100" step="20" style="height: 25px;" />
-            <script type="text/javascript">
-                var range = document.getElementById('range');
-                range.addEventListener('input', function () {
-                    console.log('input: ' + this.value);
-                }, false);
-                range.addEventListener('change', function () {
-                    console.log('change: ' + this.value);
-                }, false);
-            </script>
-        </p>
-        <p id="container">
-            <span class="pebble-slider ps-horizontal ps-wrap">
+        <p id="container-1">
+            <span class="pebble-slider ps-horizontal-type ps-wrap">
                 <span class="ps-subwrap">
                     <span class="ps-range-overlay">
                         <span class="ps-range-base">
@@ -178,6 +253,46 @@
                     </span>
                 </span>
             </span>
+        </p>
+        <p id="container-2">
+            <span class="pebble-slider ps-vertical-type ps-wrap">
+                <span class="ps-subwrap">
+                    <span class="ps-range-overlay">
+                        <span class="ps-range-base">
+                            <span class="ps-range-aligner">
+                                <span class="ps-range-sizer">
+                                    <span class="ps-range-rail">
+                                        <span class="ps-range-limiter">
+                                            <span class="ps-range-bar"></span>
+                                        </span>
+                                    </span>
+                                </span>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="ps-toggle-overlay-and-limiter">
+                        <span class="ps-toggle-wrap">
+                            <span class="ps-toggle-rail">
+                                <span class="ps-toggle-neck">
+                                    <span class="ps-toggle-handle"></span>
+                                </span>
+                            </span>
+                        </span>
+                    </span>
+                </span>
+            </span>
+        </p>
+        <p>
+            <input id="range" type="range" min="0" max="100" step="20" style="height: 25px;" />
+            <script type="text/javascript">
+                var range = document.getElementById('range');
+                range.addEventListener('input', function () {
+                    console.log('input: ' + this.value);
+                }, false);
+                range.addEventListener('change', function () {
+                    console.log('change: ' + this.value);
+                }, false);
+            </script>
         </p>
     </body>
 </html>
