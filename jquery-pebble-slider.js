@@ -37,19 +37,29 @@ if (typeof Number.toInteger !== "function") {
             '.pebble-slider { display: inline-block; height: 10px; width: 150px; }',
             '/* Pebble Slider Essential Styles */',
             'body span.pebble-slider.ps-wrap { position: relative !important; }',
-            'body span.pebble-slider.ps-wrap > span.ps-base { border: none !important; bottom: 0 !important; display: block !important; height: auto !important; left: 0 !important; padding: 0px !important; position: absolute !important; right: 0 !important; top: 0 !important; width: auto !important; }',
-            'body span.pebble-slider.ps-wrap > span.ps-base > span.ps-range-rail { display: block !important; overflow: hidden !important; padding: 0px !important; position: absolute !important; }',
-            'body span.pebble-slider.ps-wrap > span.ps-base > span.ps-range-rail > span.ps-range-subrail, body span.pebble-slider.ps-wrap > span.ps-base > span.ps-range-rail > span.ps-range-subrail > span.ps-range-bar { display: block !important; position: absolute !important; }',
-            'body span.pebble-slider.ps-wrap > span.ps-base > span.ps-toggle-overlay { border: none !important; margin: 0px !important; padding: 0px !important; }'
+            'body span.pebble-slider.ps-wrap > span.ps-subwrap { border: none !important; bottom: 0 !important; display: block !important; height: auto !important; left: 0 !important; padding: 0px !important; position: absolute !important; right: 0 !important; top: 0 !important; width: auto !important; }',
+            'body span.pebble-slider.ps-wrap > span.ps-subwrap > span.ps-range-rail { display: block !important; overflow: hidden !important; padding: 0px !important; position: absolute !important; }',
+            'body span.pebble-slider.ps-wrap > span.ps-subwrap > span.ps-range-rail > span.ps-range-subrail, body span.pebble-slider.ps-wrap > span.ps-subwrap > span.ps-range-rail > span.ps-range-subrail > span.ps-range-bar { display: block !important; position: absolute !important; }',
+            'body span.pebble-slider.ps-wrap > span.ps-subwrap > span.ps-toggle-overlay { border: none !important; margin: 0px !important; padding: 0px !important; }'
         ];
     //$head.append($essential_styles.text(list_of_style_content.join('\r\n')));
+    if (typeof $.fn.getX !== "function") {
+        $.fn.getX = function () {
+            return this.offset().left;
+        };
+    }
     $.createPebbleSlider = function () {
         var $ps_wrap = $(document.createElement('span')),
-            $ps_base = $(document.createElement('span')),
+            $ps_subwrap = $(document.createElement('span')),
+            $ps_range_overlay = $(document.createElement('span')),
+            $ps_range_base = $(document.createElement('span')),
+            $ps_range_aligner = $(document.createElement('span')),
+            $ps_range_sizer = $(document.createElement('span')),
             $ps_range_rail = $(document.createElement('span')),
-            $ps_range_subrail = $(document.createElement('span')),
+            $ps_range_limiter = $(document.createElement('span')),
             $ps_range_bar = $(document.createElement('span')),
-            $ps_toggle_overlay = $(document.createElement('span')),
+            $ps_toggle_overlay_and_limiter = $(document.createElement('span')),
+            $ps_toggle_base = $(document.createElement('span')),
             $ps_toggle_rail = $(document.createElement('span')),
             $ps_toggle_neck = $(document.createElement('span')),
             $ps_toggle_handle = $(document.createElement('span')),
@@ -69,21 +79,31 @@ if (typeof Number.toInteger !== "function") {
             $pebble_slider_object;
         function initializeParts() {
             $ps_wrap.addClass('pebble-slider').addClass('ps-horizontal-type').addClass('ps-wrap').attr('tabindex', tabindex);
-            $ps_base.addClass('ps-base');
+            $ps_subwrap.addClass('ps-subwrap');
+            $ps_range_overlay.addClass('ps-range-overlay');
+            $ps_range_base.addClass('ps-range-base');
+            $ps_range_aligner.addClass('ps-range-aligner');
+            $ps_range_sizer.addClass('ps-range-sizer');
             $ps_range_rail.addClass('ps-range-rail');
-            $ps_range_subrail.addClass('ps-range-subrail');
+            $ps_range_limiter.addClass('ps-range-limiter');
             $ps_range_bar.addClass('ps-range-bar');
-            $ps_toggle_overlay.addClass('ps-toggle-overlay');
+            $ps_toggle_overlay_and_limiter.addClass('ps-toggle-overlay-and-limiter');
+            $ps_toggle_base.addClass('ps-toggle-base');
             $ps_toggle_rail.addClass('ps-toggle-rail');
             $ps_toggle_neck.addClass('ps-toggle-neck');
             $ps_toggle_handle.addClass('ps-toggle-handle');
             // Connect the parts
-            $ps_wrap.append($ps_base);
-            $ps_base.append($ps_range_rail);
-            $ps_range_rail.append($ps_range_subrail);
-            $ps_range_subrail.append($ps_range_bar);
-            $ps_base.append($ps_toggle_overlay);
-            $ps_toggle_overlay.append($ps_toggle_rail);
+            $ps_wrap.append($ps_subwrap);
+            $ps_subwrap.append($ps_range_overlay);
+            $ps_range_overlay.append($ps_range_base);
+            $ps_range_base.append($ps_range_aligner);
+            $ps_range_aligner.append($ps_range_sizer);
+            $ps_range_sizer.append($ps_range_rail);
+            $ps_range_rail.append($ps_range_limiter);
+            $ps_range_limiter.append($ps_range_bar);
+            $ps_subwrap.append($ps_toggle_overlay_and_limiter);
+            $ps_toggle_overlay_and_limiter.append($ps_toggle_base);
+            $ps_toggle_base.append($ps_toggle_rail);
             $ps_toggle_rail.append($ps_toggle_neck);
             $ps_toggle_neck.append($ps_toggle_handle);
         }
@@ -91,28 +111,29 @@ if (typeof Number.toInteger !== "function") {
         // Some utilities
         function addTransitionClass() {
             //console.log('addTransitionClass');
-            $ps_base.addClass('ps-transition').on('transitionend', removeTransitionClass);
+            $ps_subwrap.addClass('ps-transition').on('transitionend', removeTransitionClass);
             transition_class_added = true;
         }
         function removeTransitionClass() {
             //console.log('removeTransitionClass');
-            $ps_base.removeClass('ps-transition').off('transitionend', removeTransitionClass);
+            $ps_subwrap.removeClass('ps-transition').off('transitionend', removeTransitionClass);
             transition_class_added = false;
         }
         function updateStructure() {
-            var offset_hor, offset_ver;
+            var offset_hor, offset_ver, tr_ohh;
             if ($ps_wrap[0].parentNode === null) {
                 return; // Bail out since it's not attached to the DOM
             }
             //$ps_toggle_neck.css('width', $ps_toggle_neck.height());
             offset_hor = ($ps_toggle_neck.outerWidth() / 2);
             offset_ver = ($ps_toggle_neck.outerHeight() / 2);
+            tr_ohh = $ps_toggle_rail.outerHeight() / 2;
             $ps_toggle_neck
                 .css('margin-left', ((offset_hor > 0) ? '-' + offset_hor : 0) + 'px')
-                //.css('margin-top', (($ps_toggle_rail.outerHeight() / 2) - offset_ver) + 'px');
-                .css('top', (((($ps_toggle_rail.outerHeight() / 2) - offset_ver) / $ps_toggle_rail.outerHeight()) * 100) + '%');
-            $ps_range_subrail.attr('style', 'left: ' + (offset_hor - parseInt($ps_range_rail.css('border-left'), 10)) + 'px !important; right: ' + (offset_hor - parseInt($ps_range_rail.css('border-right'), 10)) + 'px !important;');
-            $ps_toggle_rail.attr('style', 'left: ' + offset_hor + 'px !important; right: ' + offset_hor + 'px !important;');
+                .css('margin-top', (tr_ohh - (offset_ver + tr_ohh)) + 'px');
+                //.css('top', (((($ps_toggle_rail.outerHeight() / 2) - offset_ver) / $ps_toggle_rail.outerHeight()) * 100) + '%');
+            $ps_range_limiter.attr('style', 'left: ' + (offset_hor - parseInt($ps_range_rail.css('border-left'), 10)) + 'px !important; right: ' + (offset_hor - parseInt($ps_range_rail.css('border-right'), 10)) + 'px !important;');
+            $ps_toggle_overlay_and_limiter.attr('style', 'left: ' + offset_hor + 'px !important; right: ' + offset_hor + 'px !important;');
             return pebble_slider_object;
         }
         function refreshControls(animate) {
@@ -253,8 +274,8 @@ if (typeof Number.toInteger !== "function") {
                     }
                     break;
                 }
-                width = $ps_range_subrail.width();
-                left = Math.floor((nowX - allowance) - $ps_range_subrail.getX());
+                width = $ps_range_limiter.width();
+                left = Math.floor((nowX - allowance) - $ps_range_limiter.getX());
                 if (left > width) {
                     left = width;
                 } else if (left < 0) {
@@ -301,11 +322,16 @@ if (typeof Number.toInteger !== "function") {
                     $ps_wrap.detach();
                 }
                 $ps_wrap.removeAttr('class').removeAttr('style').removeAttr('tabindex');
-                $ps_base.removeAttr('class').removeAttr('style');
+                $ps_subwrap.removeAttr('class').removeAttr('style');
+                $ps_range_overlay.removeAttr('class').removeAttr('style');
+                $ps_range_base.removeAttr('class').removeAttr('style');
+                $ps_range_aligner.removeAttr('class').removeAttr('style');
+                $ps_range_sizer.removeAttr('class').removeAttr('style');
                 $ps_range_rail.removeAttr('class').removeAttr('style');
-                $ps_range_subrail.removeAttr('class').removeAttr('style');
+                $ps_range_limiter.removeAttr('class').removeAttr('style');
                 $ps_range_bar.removeAttr('class').removeAttr('style');
-                $ps_toggle_overlay.removeAttr('class').removeAttr('style');
+                $ps_toggle_overlay_and_limiter.removeAttr('class').removeAttr('style');
+                $ps_toggle_base.removeAttr('class').removeAttr('style');
                 $ps_toggle_rail.removeAttr('class').removeAttr('style');
                 $ps_toggle_neck.removeAttr('class').removeAttr('style');
                 $ps_toggle_handle.removeAttr('class').removeAttr('style');
@@ -318,7 +344,7 @@ if (typeof Number.toInteger !== "function") {
                 if (disabled === true) {
                     disabled = false;
                     $ps_wrap.removeClass('disabled').attr('tabindex', tabindex);
-                    $ps_base.off('mousedown', enableDisableAid).on('mousedown', mouseDownMouseMoveHandler);
+                    $ps_subwrap.off('mousedown', enableDisableAid).on('mousedown', mouseDownMouseMoveHandler);
                 }
                 return pebble_slider_object;
             };
@@ -329,7 +355,7 @@ if (typeof Number.toInteger !== "function") {
                         docWinEventHandler(); // Manually trigger the 'mouseup / window blur' event handler
                     }
                     $ps_wrap.addClass('disabled').removeAttr('tabindex');
-                    $ps_base.off('mousedown', mouseDownMouseMoveHandler).on('mousedown', enableDisableAid);
+                    $ps_subwrap.off('mousedown', mouseDownMouseMoveHandler).on('mousedown', enableDisableAid);
                     removeTransitionClass();
                 }
                 return pebble_slider_object;
@@ -365,11 +391,16 @@ if (typeof Number.toInteger !== "function") {
                 if (Boolean(hard) === true) {
                     resetStructure();
                     $ps_wrap.off();
-                    $ps_base.off();
+                    $ps_subwrap.off();
+                    $ps_range_overlay.off();
+                    $ps_range_base.off();
+                    $ps_range_aligner.off();
+                    $ps_range_sizer.off();
                     $ps_range_rail.off();
-                    $ps_range_subrail.off();
+                    $ps_range_limiter.off();
                     $ps_range_bar.off();
-                    $ps_toggle_overlay.off();
+                    $ps_toggle_overlay_and_limiter.off();
+                    $ps_toggle_base.off();
                     $ps_toggle_rail.off();
                     $ps_toggle_neck.off();
                     $ps_toggle_handle.off();
