@@ -39,7 +39,6 @@ if (typeof Number.toInteger !== "function") {
     $.createPebbleSlider = function () {
         var $ps_wrap = $(document.createElement('span')),
             $ps_subwrap = $(document.createElement('span')),
-            $ps_range_overlay = $(document.createElement('span')),
             $ps_range_base = $(document.createElement('span')),
             $ps_range_aligner = $(document.createElement('span')),
             $ps_range_sizer = $(document.createElement('span')),
@@ -68,7 +67,6 @@ if (typeof Number.toInteger !== "function") {
         function initializeParts() {
             $ps_wrap.addClass('pebble-slider').addClass('ps-horizontal-type').addClass('ps-wrap').attr('tabindex', tabindex);
             $ps_subwrap.addClass('ps-subwrap');
-            $ps_range_overlay.addClass('ps-range-overlay');
             $ps_range_base.addClass('ps-range-base');
             $ps_range_aligner.addClass('ps-range-aligner');
             $ps_range_sizer.addClass('ps-range-sizer');
@@ -82,8 +80,7 @@ if (typeof Number.toInteger !== "function") {
             $ps_toggle_handle.addClass('ps-toggle-handle');
             // Connect the parts
             $ps_wrap.append($ps_subwrap);
-            $ps_subwrap.append($ps_range_overlay);
-            $ps_range_overlay.append($ps_range_base);
+            $ps_subwrap.append($ps_range_base);
             $ps_range_base.append($ps_range_aligner);
             $ps_range_aligner.append($ps_range_sizer);
             $ps_range_sizer.append($ps_range_rail);
@@ -116,6 +113,7 @@ if (typeof Number.toInteger !== "function") {
             offset_hor = ($ps_toggle_neck.outerWidth() / 2);
             offset_ver = ($ps_toggle_neck.outerHeight() / 2);
             tr_offset_ver = $ps_toggle_rail.outerHeight() / 2;
+            $ps_range_sizer.css('max-height', $ps_wrap.css('height'));
             $ps_toggle_neck
                 .css('margin-left', ((offset_hor > 0) ? '-' + offset_hor : 0) + 'px')
                 .css('margin-top', (tr_offset_ver - (offset_ver + tr_offset_ver)) + 'px');
@@ -136,6 +134,11 @@ if (typeof Number.toInteger !== "function") {
             $ps_range_bar.css('right', (100 - (left_rate * 100)) + '%');
             $ps_toggle_neck.css('left', (left_rate * 100) + '%');
             return pebble_slider_object;
+        }
+        function triggerOnUpdate() {
+            trigger_param_list.push(value);
+            $pebble_slider_object.triggerHandler('update', trigger_param_list);
+            trigger_param_list.length = 0;
         }
         // Create the jQueryfied pebble slider object (http://api.jquery.com/jQuery/#working-with-plain-objects)
         $pebble_slider_object = $({
@@ -169,6 +172,9 @@ if (typeof Number.toInteger !== "function") {
                     prev_input_value = val;
                     prev_change_value = val;
                     refreshControls(true);
+                    if (disabled === false) {
+                        triggerOnUpdate();
+                    }
                     return pebble_slider_object;
                 }
                 return value;
@@ -185,6 +191,9 @@ if (typeof Number.toInteger !== "function") {
                 prev_input_value = val;
                 prev_change_value = val;
                 refreshControls(true);
+                if (disabled === false) {
+                    triggerOnUpdate();
+                }
                 return pebble_slider_object;
             },
             getValue: function () {
@@ -219,6 +228,9 @@ if (typeof Number.toInteger !== "function") {
                 prev_input_value = val;
                 prev_change_value = val;
                 refreshControls(true);
+                if (disabled === false) {
+                    triggerOnUpdate();
+                }
             },
             configurable: true,
             enumerable: false
@@ -295,6 +307,7 @@ if (typeof Number.toInteger !== "function") {
                         trigger_param_list.push(value);
                         $pebble_slider_object.triggerHandler('input', trigger_param_list);
                         trigger_param_list.length = 0;
+                        triggerOnUpdate();
                     }
                 }
             };
@@ -306,6 +319,7 @@ if (typeof Number.toInteger !== "function") {
                         trigger_param_list.push(value);
                         $pebble_slider_object.triggerHandler('change', trigger_param_list);
                         trigger_param_list.length = 0;
+                        triggerOnUpdate();
                         prev_change_value = value;
                     }
                 }
@@ -328,7 +342,6 @@ if (typeof Number.toInteger !== "function") {
                 }
                 $ps_wrap.removeAttr('class').removeAttr('style').removeAttr('tabindex');
                 $ps_subwrap.removeAttr('class').removeAttr('style');
-                $ps_range_overlay.removeAttr('class').removeAttr('style');
                 $ps_range_base.removeAttr('class').removeAttr('style');
                 $ps_range_aligner.removeAttr('class').removeAttr('style');
                 $ps_range_sizer.removeAttr('class').removeAttr('style');
@@ -397,7 +410,6 @@ if (typeof Number.toInteger !== "function") {
                     resetStructure();
                     $ps_wrap.off();
                     $ps_subwrap.off();
-                    $ps_range_overlay.off();
                     $ps_range_base.off();
                     $ps_range_aligner.off();
                     $ps_range_sizer.off();
