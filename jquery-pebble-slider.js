@@ -18,6 +18,7 @@
         jQuery library
         domxy
 */
+/*jshint bitwise: false*/
 if (typeof Number.toInteger !== "function") {
     Number.toInteger = function (arg) {
         "use strict";
@@ -29,20 +30,7 @@ if (typeof Number.toInteger !== "function") {
 (function (window, $, undefined) {
     "use strict";
     var $document = $(document),
-        $window = $(window),
-        $head = $('head'),
-        $essential_styles = $(document.createElement('style')).attr('type', 'text/css'),
-        list_of_style_content = [
-            '/* Pebble Slider Default Styles */',
-            '.pebble-slider { display: inline-block; height: 10px; width: 150px; }',
-            '/* Pebble Slider Essential Styles */',
-            'body span.pebble-slider.ps-wrap { position: relative !important; }',
-            'body span.pebble-slider.ps-wrap > span.ps-subwrap { border: none !important; bottom: 0 !important; display: block !important; height: auto !important; left: 0 !important; padding: 0px !important; position: absolute !important; right: 0 !important; top: 0 !important; width: auto !important; }',
-            'body span.pebble-slider.ps-wrap > span.ps-subwrap > span.ps-range-rail { display: block !important; overflow: hidden !important; padding: 0px !important; position: absolute !important; }',
-            'body span.pebble-slider.ps-wrap > span.ps-subwrap > span.ps-range-rail > span.ps-range-subrail, body span.pebble-slider.ps-wrap > span.ps-subwrap > span.ps-range-rail > span.ps-range-subrail > span.ps-range-bar { display: block !important; position: absolute !important; }',
-            'body span.pebble-slider.ps-wrap > span.ps-subwrap > span.ps-toggle-overlay { border: none !important; margin: 0px !important; padding: 0px !important; }'
-        ];
-    //$head.append($essential_styles.text(list_of_style_content.join('\r\n')));
+        $window = $(window);
     if (typeof $.fn.getX !== "function") {
         $.fn.getX = function () {
             return this.offset().left;
@@ -120,17 +108,17 @@ if (typeof Number.toInteger !== "function") {
             transition_class_added = false;
         }
         function updateStructure() {
-            var offset_hor, offset_ver, tr_ohh;
+            var offset_hor, offset_ver, tr_offset_ver;
             if ($ps_wrap[0].parentNode === null) {
                 return; // Bail out since it's not attached to the DOM
             }
             //$ps_toggle_neck.css('width', $ps_toggle_neck.height());
             offset_hor = ($ps_toggle_neck.outerWidth() / 2);
             offset_ver = ($ps_toggle_neck.outerHeight() / 2);
-            tr_ohh = $ps_toggle_rail.outerHeight() / 2;
+            tr_offset_ver = $ps_toggle_rail.outerHeight() / 2;
             $ps_toggle_neck
                 .css('margin-left', ((offset_hor > 0) ? '-' + offset_hor : 0) + 'px')
-                .css('margin-top', (tr_ohh - (offset_ver + tr_ohh)) + 'px');
+                .css('margin-top', (tr_offset_ver - (offset_ver + tr_offset_ver)) + 'px');
                 //.css('top', (((($ps_toggle_rail.outerHeight() / 2) - offset_ver) / $ps_toggle_rail.outerHeight()) * 100) + '%');
             $ps_range_limiter.attr('style', 'left: ' + (offset_hor - parseInt($ps_range_rail.css('border-left'), 10)) + 'px !important; right: ' + (offset_hor - parseInt($ps_range_rail.css('border-right'), 10)) + 'px !important;');
             $ps_toggle_overlay_and_limiter.attr('style', 'left: ' + offset_hor + 'px !important; right: ' + offset_hor + 'px !important;');
@@ -246,18 +234,28 @@ if (typeof Number.toInteger !== "function") {
                     http://stackoverflow.com/questions/24670598/why-does-chrome-raise-a-mousemove-on-mousedown
             */
             mouseDownMouseMoveHandler = function (event) {
-                var nowX = event.pageX, left, width, left_rate;
+                var nowX, left, width, left_rate;
                 switch (event.type) {
+                case 'touchstart':
+                    //console.log('touchstart');
+                    // http://stackoverflow.com/questions/4780837/is-there-an-equivalent-to-e-pagex-position-for-touchstart-event-as-there-is-fo
+                    event.pageX = event.originalEvent.touches[0].pageX;
+                    event.pageY = event.originalEvent.touches[0].pageY;
+                    /* falls through */
                 case 'mousedown':
                     event.preventDefault(); // This somehow disables text-selection
+                    if (event.which === 3) {
+                        return;
+                    }
                     active = true;
+                    nowX = event.pageX;
                     if (transition_class_added === false) {
                         addTransitionClass();
                     }
                     $ps_toggle_neck.addClass('active');
                     prevX = nowX;
                     prevY = event.pageY;
-                    $document.on('mousemove', mouseDownMouseMoveHandler).on('mouseup', docWinEventHandler);
+                    $document.on('mousemove touchmove', mouseDownMouseMoveHandler).on('mouseup touchend', docWinEventHandler);
                     $window.on('blur', docWinEventHandler);
                     if (event.target === $ps_toggle_handle[0] || event.target === $ps_toggle_neck[0]) {
                         allowance = nowX - ($ps_toggle_neck.getX() - parseInt($ps_toggle_neck.css('margin-left'), 10));
@@ -265,7 +263,13 @@ if (typeof Number.toInteger !== "function") {
                     }
                     allowance = 0;
                     break;
+                case 'touchmove':
+                    //console.log('touchmove');
+                    event.pageX = event.originalEvent.touches[0].pageX;
+                    event.pageY = event.originalEvent.touches[0].pageY;
+                    /* falls through */
                 case 'mousemove':
+                    nowX = event.pageX;
                     if (nowX === prevX && event.pageY === prevY) {
                         return; // Bail out, since it's a faux mousemove event
                     }
@@ -307,10 +311,11 @@ if (typeof Number.toInteger !== "function") {
                 }
                 $ps_toggle_neck.removeClass('active');
                 $window.off('blur', docWinEventHandler);
-                $document.off('mousemove', mouseDownMouseMoveHandler).off('mouseup', docWinEventHandler);
+                $document.off('mousemove touchmove', mouseDownMouseMoveHandler).off('mouseup touchend', docWinEventHandler);
             };
             function enableDisableAid(event) {
                 switch (event.type) {
+                case 'touchstart':
                 case 'mousedown':
                     event.preventDefault();
                     break;
@@ -344,7 +349,7 @@ if (typeof Number.toInteger !== "function") {
                 if (disabled === true) {
                     disabled = false;
                     $ps_wrap.removeClass('disabled').attr('tabindex', tabindex);
-                    $ps_subwrap.off('mousedown', enableDisableAid).on('mousedown', mouseDownMouseMoveHandler);
+                    $ps_subwrap.off('mousedown', enableDisableAid).on('mousedown touchstart', mouseDownMouseMoveHandler);
                 }
                 return pebble_slider_object;
             };
@@ -355,7 +360,7 @@ if (typeof Number.toInteger !== "function") {
                         docWinEventHandler(); // Manually trigger the 'mouseup / window blur' event handler
                     }
                     $ps_wrap.addClass('disabled').removeAttr('tabindex');
-                    $ps_subwrap.off('mousedown', mouseDownMouseMoveHandler).on('mousedown', enableDisableAid);
+                    $ps_subwrap.off('mousedown touchstart', mouseDownMouseMoveHandler).on('mousedown', enableDisableAid);
                     removeTransitionClass();
                 }
                 return pebble_slider_object;

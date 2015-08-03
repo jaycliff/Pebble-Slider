@@ -1,0 +1,202 @@
+/* Pebble Slider strictly-enforced styles */
+
+/* https://css-tricks.com/specifics-on-css-specificity/ */
+
+span.pebble-slider {
+    display: inline-block !important;
+    position: relative !important;
+}
+
+span.pebble-slider span.ps-subwrap {
+    border: none !important;
+    display: block !important;
+    height: 100% !important;
+    left: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute !important;
+    top: 0 !important;
+    width: 100% !important;
+}
+
+span.pebble-slider span.ps-range-overlay {
+    background: none !important;
+    border: none !important;
+    bottom: 0 !important;
+    display: block !important;
+    left: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+}
+
+span.pebble-slider span.ps-range-base {
+    background: none !important;
+    border: none !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+span.pebble-slider span.ps-range-aligner {
+    background: none !important;
+    border: none !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    /* position relative allows 100% height */
+    position: relative !important;
+    vertical-align: middle !important;
+    width: 100% !important;
+}
+
+span.pebble-slider span.ps-range-sizer {
+    background: none !important;
+    border: none !important;
+    display: block !important;
+    padding: 0 !important;
+    position: relative !important;
+}
+
+span.pebble-slider span.ps-range-rail {
+    bottom: 0 !important;
+    display: block !important;
+    left: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+    width: auto !important;
+}
+
+span.pebble-slider span.ps-range-limiter {
+    background: none !important;
+    border: none !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute !important;
+}
+
+span.pebble-slider span.ps-range-bar {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute !important;
+}
+
+span.pebble-slider span.ps-toggle-overlay-and-limiter {
+    background: none !important;
+    border: none !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute !important;
+}
+
+span.pebble-slider span.ps-toggle-base {
+    background: none !important;
+    border: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+span.pebble-slider span.ps-toggle-rail {
+    background: none !important;
+    border: none !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+    vertical-align: middle !important;
+    width: 100% !important;
+}
+
+span.pebble-slider span.ps-toggle-neck {
+    display: block !important;
+    position: absolute !important;
+}
+
+span.pebble-slider.ps-horizontal-type span.ps-range-sizer {
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+span.pebble-slider.ps-horizontal-type span.ps-range-limiter {
+    bottom: 0 !important;
+    top: 0 !important;
+}
+
+span.pebble-slider.ps-horizontal-type span.ps-range-bar {
+    bottom: 0 !important;
+    height: auto !important;
+    left: auto !important;
+    top: 0 !important;
+    width: 150% !important;
+}
+
+span.pebble-slider.ps-horizontal-type span.ps-toggle-overlay-and-limiter {
+    bottom: 0 !important;
+    top: 0 !important;
+}
+
+span.pebble-slider.ps-horizontal-type span.ps-range-base,
+span.pebble-slider.ps-horizontal-type span.ps-toggle-base {
+    display: table !important;
+}
+
+span.pebble-slider.ps-horizontal-type span.ps-range-aligner,
+span.pebble-slider.ps-horizontal-type span.ps-toggle-rail {
+    display: table-cell !important;
+}
+
+span.pebble-slider.ps-horizontal-type span.ps-toggle-neck {
+    bottom: auto !important;
+    right: auto !important;
+    top: auto !important;
+}
+
+span.pebble-slider.ps-vertical-type span.ps-range-sizer {
+    height: 100% !important;
+    margin: 0 auto !important;
+}
+
+span.pebble-slider.ps-vertical-type span.ps-range-limiter {
+    left: 0 !important;
+    right: 0 !important;
+}
+
+span.pebble-slider.ps-vertical-type span.ps-range-bar {
+    bottom: auto !important;
+    height: 150% !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: auto !important;
+}
+
+span.pebble-slider.ps-vertical-type span.ps-toggle-overlay-and-limiter {
+    left: 0 !important;
+    right: 0 !important;
+}
+
+span.pebble-slider.ps-vertical-type span.ps-range-base,
+span.pebble-slider.ps-vertical-type span.ps-range-aligner,
+span.pebble-slider.ps-vertical-type span.ps-toggle-base,
+span.pebble-slider.ps-vertical-type span.ps-toggle-rail {
+    display: block !important;
+}
+
+span.pebble-slider.ps-vertical-type span.ps-toggle-neck {
+    bottom: auto !important;
+    left: 50% !important;
+    right: auto !important;
+}

@@ -13,178 +13,129 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
+
+/* Pebble Slider default styles */
+
 .pebble-slider {
-    display: inline-block;
+    background-color: transparent;
 }
+
 .pebble-slider.disabled {
     opacity: 0.5;
 }
-.pebble-slider span {
-    display: block;
-}
-.pebble-slider .ps-base {
-    height: 100%;
-    position: absolute;
-    width: 100%;
-}
+
 .pebble-slider .ps-range-rail {
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.125);
-    overflow: hidden;
-    position: absolute;
+    border: solid 1px #a0a0a0;
 }
-.pebble-slider .ps-range-rail:after {
-    bottom: 0;
-    content: ".";
-    display: block;
-    left: 0;
-    overflow: hidden;
-    position: absolute;
-    right: 0;
-    top: 0;
-    text-indent: -999em;
-}
-.pebble-slider .ps-range-subrail {
-    position: absolute;
-}
+
 .pebble-slider .ps-range-bar {
-    background-color: #a0a0a0;
-    position: absolute;
+    background-color: #c0c0c0;
 }
-.pebble-slider .ps-toggle-overlay {
-    position: absolute;
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
-}
-.pebble-slider .ps-toggle-rail {
-    position: absolute;
-}
+
 .pebble-slider .ps-toggle-neck {
-    background-color: black;
-    border-radius: 10px;
-    cursor: pointer;
-    height: 10px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 10px;
+    background-color: transparent;
 }
+
 .pebble-slider .ps-toggle-handle {
     background-color: #a0a0a0;
-    border-radius: 8px;
-    height: 10px;
-    margin-left: -3px;
-    margin-top: -3px;
-    opacity: 0.65;
-    padding: 3px;
-    width: 10px;
+    display: block;
+    height: 100%;
+    width: 100%;
 }
-.pebble-slider .ps-toggle-neck:hover .ps-toggle-handle,
-.pebble-slider .ps-toggle-neck.active .ps-toggle-handle {
-    /* box-shadow: 0px 0px 0px 1px rgba(225, 69, 4, 0.75); */
-    box-shadow: 0px 0px 0px 1px rgb(0, 0, 0);
-}
-/*
-.pebble-slider .ps-base .ps-toggle-neck:hover {
-    cursor: grab;
-    cursor: -webkit-grab;
-    cursor: -moz-grab;
-}
-.pebble-slider .ps-base .ps-toggle-neck.active {
-    cursor: grabbing;
-    cursor: -webkit-grabbing;
-    cursor: -moz-grabbing;
-}
-*/
-/* Horizontal slider */
-.pebble-slider.ps-horizontal-type {
+
+.ps-horizontal-type {
     height: 20px;
+    padding: 0 10px;
     width: 300px;
 }
-.pebble-slider.ps-horizontal-type .ps-range-rail {
-    bottom: 25%;
-    left: 0;
-    right: 0;
-    top: 25%;
-}
-.pebble-slider.ps-horizontal-type .ps-range-subrail {
-    height: 100%;
-    left: 5px;
-    right: 5px;
-    top: 0;
-}
-.pebble-slider.ps-horizontal-type .ps-range-bar {
-    height: 100%;
-    left: auto;
-    opacity: 1;
-    right: 100%;
-    top: 0;
-    width: 150%
-}
-.pebble-slider.ps-horizontal-type .ps-toggle-rail {
+
+.ps-horizontal-type .ps-range-sizer {
     height: 50%;
-    left: 5px;
-    right: 5px;
-    top: 25%;
+    max-height: 100%;
 }
-.pebble-slider.ps-horizontal-type .ps-toggle-neck {
-    margin-left: -5px;
+
+.ps-horizontal-type .ps-range-limiter {
+    left: 10px;
+    right: 10px;
 }
-.pebble-slider.ps-horizontal-type .ps-base.ps-transition .ps-range-bar {
-    /*
-    transition: width 0.2s;
-    -moz-transition: width 0.2s;
-    -webkit-transition: width 0.2s;
-    -ms-transition: width 0.2s;
-    -o-transition: width 0.2s;
-    */
+
+.ps-horizontal-type .ps-range-bar {
+    right: 50%;
+}
+
+.ps-horizontal-type .ps-toggle-overlay-and-limiter {
+    left: 10px;
+    right: 10px;
+}
+
+.ps-horizontal-type .ps-toggle-neck {
+    cursor: pointer;
+    height: 10px;
+    left: 50%;
+    width: 10px;
+}
+
+.ps-vertical-type {
+    height: 300px;
+    padding: 10px 0;
+    width: 20px;
+}
+
+.ps-vertical-type .ps-range-sizer {
+    max-width: 100%;
+    width: 50%;
+}
+
+.ps-vertical-type .ps-range-limiter {
+    bottom: 10px;
+    top: 10px;
+}
+
+.ps-vertical-type .ps-range-bar {
+    top: 50%;
+}
+
+.ps-vertical-type .ps-toggle-overlay-and-limiter {
+    bottom: 10px;
+    top: 10px;
+}
+
+.ps-vertical-type .ps-toggle-neck {
+    height: 20px;
+    margin-left: -20px;
+    margin-top: -10px;
+    top: 50%;
+    width: 40px;
+}
+
+.ps-horizontal-type .ps-transition .ps-range-bar {
     transition: right 0.2s;
     -moz-transition: right 0.2s;
     -webkit-transition: right 0.2s;
     -ms-transition: right 0.2s;
     -o-transition: right 0.2s;
 }
-.pebble-slider.ps-horizontal-type .ps-base.ps-transition .ps-toggle-neck {
+
+.ps-horizontal-type .ps-transition .ps-toggle-neck {
     transition: left 0.2s;
     -moz-transition: left 0.2s;
     -webkit-transition: left 0.2s;
     -ms-transition: left 0.2s;
     -o-transition: left 0.2s;
 }
-/* Vertical slider */
-.pebble-slider.ps-vertical-type {
-    height: 100%;
-    padding: 10px 0;
-    width: 20px;
+
+.ps-vertical-type .ps-transition .ps-range-bar {
+    transition: top 0.2s;
+    -moz-transition: top 0.2s;
+    -webkit-transition: top 0.2s;
+    -ms-transition: top 0.2s;
+    -o-transition: top 0.2s;
 }
-.pebble-slider.ps-vertical-type .ps-range-rail {
-    height: 100%;
-    left: 25%;
-    width: 50%;
-}
-.pebble-slider.ps-vertical-type .ps-range-subrail {
-    bottom: 5px;
-    left: 0;
-    top: 5px;
-    width: 100%;
-}
-.pebble-slider.ps-vertical-type .ps-range-bar {
-    width: 100%;
-    height: 150%;
-    left: 0;
-    top: auto;
-}
-.pebble-slider.ps-vertical-type .ps-toggle-rail {
-    bottom: 5px;
-    left: 25%;
-    right: 5px;
-    top: 5px;
-    width: 50%;
-}
-.pebble-slider.ps-vertical-type .ps-toggle-neck {
-    margin-top: -5px;
+
+.ps-vertical-type .ps-transition .ps-toggle-neck {
+    transition: top 0.2s;
+    -moz-transition: top 0.2s;
+    -webkit-transition: top 0.2s;
+    -ms-transition: top 0.2s;
+    -o-transition: top 0.2s;
 }
