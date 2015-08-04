@@ -1,12 +1,12 @@
 /*
     Copyright 2015 Jaycliff Arcilla of Eversun Software Philippines Corporation (Davao Branch)
-    
+
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
-    
+
         http://www.apache.org/licenses/LICENSE-2.0
-    
+
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,45 +18,50 @@
 (function (window, $) {
     "use strict";
     var extend_options;
+    function getWindow(elem) {
+    	return jQuery.isWindow(elem) ? elem : elem.nodeType === 9 ? elem.defaultView || elem.parentWindow : false;
+    }
     function getDOMX(elem) {
-        var doc,
-            body,
-            doc_elem,
+        var docElem,
             win,
-            scroll_left,
-            client_left;
-        if (!elem || !elem.ownerDocument) {
+            box,
+            doc = elem && elem.ownerDocument;
+        if (!doc) {
+            return;
+        }
+        docElem = doc.documentElement;
+        // Make sure it's not a disconnected DOM node
+        if (!jQuery.contains(docElem, elem)) {
             return 0;
         }
-        doc = elem.ownerDocument;
-        body = doc.body;
-        doc_elem = doc.documentElement;
-        win = doc.defaultView || doc.parentWindow;
-        scroll_left = win.pageXOffset || doc_elem.scrollLeft || body.scrollLeft;
-        client_left = doc_elem.clientLeft || body.clientLeft || 0;
-        // Support: BlackBerry 5, iOS 3 (original iPhone)
-        // If we don't have gBCR, just use 0 rather than throw an error
-        return (((typeof elem.getBoundingClientRect === "function") ? elem.getBoundingClientRect().left : 0) + scroll_left) - client_left;
+        // If we don't have gBCR, just use 0, 0 rather than error
+        // BlackBerry 5, iOS 3 (original iPhone)
+        if (typeof elem.getBoundingClientRect !== undefined) {
+            box = elem.getBoundingClientRect();
+        }
+        win = getWindow(doc);
+        return box.left + (win.pageXOffset || docElem.scrollLeft) - (docElem.clientLeft || 0);
     }
     function getDOMY(elem) {
-        var doc,
-            body,
-            doc_elem,
+        var docElem,
             win,
-            scroll_top,
-            client_top;
-        if (!elem || !elem.ownerDocument) {
+            box,
+            doc = elem && elem.ownerDocument;
+        if (!doc) {
+            return;
+        }
+        docElem = doc.documentElement;
+        // Make sure it's not a disconnected DOM node
+        if (!jQuery.contains(docElem, elem)) {
             return 0;
         }
-        doc = elem.ownerDocument;
-        body = doc.body;
-        doc_elem = doc.documentElement;
-        win = doc.defaultView || doc.parentWindow;
-        scroll_top = win.pageYOffset || doc_elem.scrollTop || body.scrollTop;
-        client_top = doc_elem.clientTop || body.clientTop || 0;
-        // Support: BlackBerry 5, iOS 3 (original iPhone)
-        // If we don't have gBCR, just use 0 rather than throw an error
-        return (((typeof elem.getBoundingClientRect === "function") ? elem.getBoundingClientRect().top : 0) + scroll_top) - client_top;
+        // If we don't have gBCR, just use 0, 0 rather than error
+        // BlackBerry 5, iOS 3 (original iPhone)
+        if (typeof elem.getBoundingClientRect !== undefined) {
+            box = elem.getBoundingClientRect();
+        }
+        win = getWindow(doc);
+        return box.top  + (win.pageYOffset || docElem.scrollTop)  - (docElem.clientTop || 0);
     }
     extend_options = {
         getX: function getX() {
@@ -78,4 +83,4 @@
     $.getDOMY = getDOMY;
     window.getDOMX = getDOMX;
     window.getDOMY = getDOMY;
-}(window, window.jQuery || (window.module && window.module.exports)));
+}(window, (typeof jQuery === "function" && jQuery) || (typeof module === "object" && typeof module.exports === "function" && module.exports)));
