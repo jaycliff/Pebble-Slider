@@ -22,46 +22,42 @@
     	return jQuery.isWindow(elem) ? elem : elem.nodeType === 9 ? elem.defaultView || elem.parentWindow : false;
     }
     function getDOMX(elem) {
-        var docElem,
+        var doc_elem,
             win,
             box,
             doc = elem && elem.ownerDocument;
         if (!doc) {
             return;
         }
-        docElem = doc.documentElement;
-        // Make sure it's not a disconnected DOM node
-        if (!jQuery.contains(docElem, elem)) {
+        doc_elem = doc.documentElement;
+        // Make sure it's not a disconnected DOM node and...
+        // If we don't have gBCR, just use 0 rather than error
+        // BlackBerry 5, iOS 3 (original iPhone)
+        if (!jQuery.contains(doc_elem, elem) || typeof elem.getBoundingClientRect !== "function") {
             return 0;
         }
-        // If we don't have gBCR, just use 0, 0 rather than error
-        // BlackBerry 5, iOS 3 (original iPhone)
-        if (typeof elem.getBoundingClientRect !== undefined) {
-            box = elem.getBoundingClientRect();
-        }
+        box = elem.getBoundingClientRect();
         win = getWindow(doc);
-        return box.left + (win.pageXOffset || docElem.scrollLeft) - (docElem.clientLeft || 0);
+        return box.left + (win.pageXOffset || doc_elem.scrollLeft) - (doc_elem.clientLeft || 0);
     }
     function getDOMY(elem) {
-        var docElem,
+        var doc_elem,
             win,
             box,
             doc = elem && elem.ownerDocument;
         if (!doc) {
             return;
         }
-        docElem = doc.documentElement;
-        // Make sure it's not a disconnected DOM node
-        if (!jQuery.contains(docElem, elem)) {
+        doc_elem = doc.documentElement;
+        // Make sure it's not a disconnected DOM node and...
+        // If we don't have gBCR, just use 0 rather than error
+        // BlackBerry 5, iOS 3 (original iPhone)
+        if (!jQuery.contains(doc_elem, elem) || typeof elem.getBoundingClientRect !== "function") {
             return 0;
         }
-        // If we don't have gBCR, just use 0, 0 rather than error
-        // BlackBerry 5, iOS 3 (original iPhone)
-        if (typeof elem.getBoundingClientRect !== undefined) {
-            box = elem.getBoundingClientRect();
-        }
+        box = elem.getBoundingClientRect();
         win = getWindow(doc);
-        return box.top  + (win.pageYOffset || docElem.scrollTop)  - (docElem.clientTop || 0);
+        return box.top  + (win.pageYOffset || doc_elem.scrollTop) - (doc_elem.clientTop || 0);
     }
     extend_options = {
         getX: function getX() {
@@ -81,6 +77,4 @@
     $.fn.extend(extend_options);
     $.getDOMX = getDOMX;
     $.getDOMY = getDOMY;
-    window.getDOMX = getDOMX;
-    window.getDOMY = getDOMY;
 }(window, (typeof jQuery === "function" && jQuery) || (typeof module === "object" && typeof module.exports === "function" && module.exports)));
