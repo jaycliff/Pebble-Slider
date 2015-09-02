@@ -30,7 +30,20 @@ if (typeof Number.toInteger !== "function") {
 (function (window, $, undefined) {
     "use strict";
     var $document = $(document),
-        $window = $(window);
+        $window = $(window),
+        applier = (function () {
+            var list = [];
+            return function (func, obj, args) {
+                var i, length = args.length, result;
+                list.length = 0;
+                for (i = 0; i < length; i += 1) {
+                    list.push(args[i]);
+                }
+                result = func.apply(obj, list);
+                list.length = 0;
+                return result;
+            };
+        }());
     if (typeof $.fn.getX !== "function") {
         $.fn.getX = function () {
             return this.offset().left;
@@ -122,6 +135,7 @@ if (typeof Number.toInteger !== "function") {
             $ps_toggle_overlay_and_limiter.attr('style', 'left: ' + offset_hor + 'px !important; right: ' + offset_hor + 'px !important;');
             return pebble_slider_object;
         }
+        // Updates the slider UI
         function refreshControls(animate) {
             var left_rate;
             if ($ps_wrap[0].parentNode === null) {
@@ -134,11 +148,6 @@ if (typeof Number.toInteger !== "function") {
             $ps_range_bar.css('right', (100 - (left_rate * 100)) + '%');
             $ps_toggle_neck.css('left', (left_rate * 100) + '%');
             return pebble_slider_object;
-        }
-        function triggerOnUpdate() {
-            trigger_param_list.push(value);
-            $pebble_slider_object.triggerHandler('update', trigger_param_list);
-            trigger_param_list.length = 0;
         }
         // Create the jQueryfied pebble slider object (http://api.jquery.com/jQuery/#working-with-plain-objects)
         $pebble_slider_object = $({
@@ -172,9 +181,6 @@ if (typeof Number.toInteger !== "function") {
                     prev_input_value = val;
                     prev_change_value = val;
                     refreshControls(true);
-                    if (disabled === false) {
-                        triggerOnUpdate();
-                    }
                     return pebble_slider_object;
                 }
                 return value;
@@ -191,9 +197,6 @@ if (typeof Number.toInteger !== "function") {
                 prev_input_value = val;
                 prev_change_value = val;
                 refreshControls(true);
-                if (disabled === false) {
-                    triggerOnUpdate();
-                }
                 return pebble_slider_object;
             },
             getValue: function () {
@@ -206,6 +209,20 @@ if (typeof Number.toInteger !== "function") {
                 refreshControls();
                 return pebble_slider_object;
             },
+            switchTo: function (arg) {
+                var $target;
+                if (arg instanceof $) {
+                    $target = arg;
+                } else {
+                    $target = $(arg);
+                }
+                $target = $target.replaceWith($ps_wrap);
+                removeTransitionClass();
+                updateStructure();
+                refreshControls();
+                return $target;
+            },
+            refresh: refreshControls,
             updateStructure: updateStructure,
             getElement: function () {
                 return $ps_wrap;
@@ -228,16 +245,13 @@ if (typeof Number.toInteger !== "function") {
                 prev_input_value = val;
                 prev_change_value = val;
                 refreshControls(true);
-                if (disabled === false) {
-                    triggerOnUpdate();
-                }
             },
             configurable: true,
             enumerable: false
         });
         // Event-handling setup
         (function () {
-            var allowance = 0, mouseDownMouseMoveHandler, docWinEventHandler, prevX = 0, prevY = 0, applier;
+            var allowance = 0, mouseDownMouseMoveHandler, docWinEventHandler, prevX = 0, prevY = 0;
             /*
                 The nowX-prevX-prevY tandem is a hack for browsers with stupid mousemove event implementation (Chrome, I'm looking at you!).
                 What is this stupidity you're talking about?
@@ -307,7 +321,6 @@ if (typeof Number.toInteger !== "function") {
                         trigger_param_list.push(value);
                         $pebble_slider_object.triggerHandler('input', trigger_param_list);
                         trigger_param_list.length = 0;
-                        triggerOnUpdate();
                     }
                 }
             };
@@ -319,7 +332,6 @@ if (typeof Number.toInteger !== "function") {
                         trigger_param_list.push(value);
                         $pebble_slider_object.triggerHandler('change', trigger_param_list);
                         trigger_param_list.length = 0;
-                        triggerOnUpdate();
                         prev_change_value = value;
                     }
                 }
@@ -330,6 +342,7 @@ if (typeof Number.toInteger !== "function") {
             function enableDisableAid(event) {
                 switch (event.type) {
                 case 'touchstart':
+                    /* falls through */
                 case 'mousedown':
                     event.preventDefault();
                     break;
@@ -378,19 +391,6 @@ if (typeof Number.toInteger !== "function") {
                 }
                 return pebble_slider_object;
             };
-            applier = (function () {
-                var list = [];
-                return function (func, obj, args) {
-                    var i, length = args.length, result;
-                    list.length = 0;
-                    for (i = 0; i < length; i += 1) {
-                        list.push(args[i]);
-                    }
-                    result = func.apply(obj, list);
-                    list.length = 0;
-                    return result;
-                };
-            }());
             pebble_slider_object.on = function () {
                 applier($_proto.on, $pebble_slider_object, arguments);
                 return pebble_slider_object;

@@ -92,10 +92,10 @@
                 var slider2 = $.createPebbleSlider().attachTo('#container'), $s2_handle = slider2.getElement().find('.ps-toggle-handle');
                 slider2.getElement().attr('id', 'slider2').width(640);
                 $s2_handle.text(slider2.val());
-                slider2.on('update', function (event, value) {
+                slider2.on('input', function (event, value) {
                     $s2_handle.text(Math.floor(value));
                     console.log(event);
-                    console.log('onupdate: ' + value);
+                    console.log('oninput: ' + value);
                 });
             </script>
 
