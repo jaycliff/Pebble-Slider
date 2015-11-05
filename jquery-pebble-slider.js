@@ -27,7 +27,13 @@ if (typeof Number.toInteger !== "function") {
         return (arg !== arg) ? 0 : (arg === 0 || arg === Infinity || arg === -Infinity) ? arg : (arg > 0) ? Math.floor(arg) : Math.ceil(arg);
     };
 }
-(function (window, $, undefined) {
+if (typeof String.prototype.trim !== "function") {
+    String.prototype.trim = function () {
+        "use strict";
+        return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+    };
+}
+(function (window, $, undef) {
     "use strict";
     var $document = $(document),
         $window = $(window),
@@ -49,8 +55,14 @@ if (typeof Number.toInteger !== "function") {
             return this.offset().left;
         };
     }
-    $.createPebbleSlider = function () {
-        var $ps_wrap = $(document.createElement('span')),
+    if (typeof $.fn.getY !== "function") {
+        $.fn.getY = function () {
+            return this.offset().top;
+        };
+    }
+    $.createPebbleSlider = function (options) {
+        var is_options_valid = $.type(options) === 'object',
+            $ps_wrap = $(document.createElement('span')),
             $ps_subwrap = $(document.createElement('span')),
             $ps_range_base = $(document.createElement('span')),
             $ps_range_aligner = $(document.createElement('span')),
@@ -63,22 +75,61 @@ if (typeof Number.toInteger !== "function") {
             $ps_toggle_rail = $(document.createElement('span')),
             $ps_toggle_neck = $(document.createElement('span')),
             $ps_toggle_handle = $(document.createElement('span')),
-            tabindex = 0,
             trigger_param_list = [],
             $_proto = $.fn,
+            default_tab_index = (is_options_valid && Number.toInteger(options.tabIndex)) || 0,
+            tab_index = default_tab_index,
+            type = (is_options_valid && String(options.type).trim().toLowerCase() === 'vertical') ? 'vertical' : 'horizontal',
+            type_class = (type === 'vertical') ? 'ps-vertical-type' : 'ps-horizontal-type',
+            css_dimension_prop = (type === 'vertical') ? 'height' : 'width',
             active = false,
             disabled = true,
             //step = 0,
             transition_class_added = false,
-            min_value = 0,
-            max_value = 100,
-            value = (min_value >= max_value) ? min_value : (min_value + ((max_value - min_value) / 2)),
-            prev_input_value = value,
-            prev_change_value = value,
+            default_min_val = (is_options_valid && Number(options.min)) || 0,
+            default_max_val = 100,
+            default_val,
+            min_value = default_min_val,
+            max_value = default_max_val,
+            max_sub,
+            value,
+            user_set_value = false,
+            prev_input_value,
+            prev_change_value,
             pebble_slider_object,
             $pebble_slider_object;
+        //console.log(options);
+        if (is_options_valid && Object.prototype.hasOwnProperty.call(options, 'max')) {
+            default_max_val = Number(options.max) || 0;
+            max_value = default_max_val;
+        }
+        function getComputedMax() {
+            var max = max_value;
+            if ((max < min_value) && (min_value < 100)) {
+                max = 100;
+            }
+            return max;
+        }
+        if (is_options_valid && Object.prototype.hasOwnProperty.call(options, 'value')) {
+            max_sub = getComputedMax();
+            default_val = Number(options.value) || 0;
+            if (default_val > max_sub) {
+                default_val = max_sub;
+            }
+            if (default_val < min_value) {
+                default_val = min_value;
+            }
+        }
+        default_val = (min_value >= max_value) ? min_value : (min_value + ((max_value - min_value) / 2));
+        value = default_val;
+        prev_input_value = value;
+        prev_change_value = value;
         function initializeParts() {
-            $ps_wrap.addClass('pebble-slider').addClass('ps-horizontal-type').addClass('ps-wrap').attr('tabindex', tabindex);
+            $ps_wrap
+                .addClass('pebble-slider')
+                .addClass(type_class)
+                .addClass('ps-wrap')
+                .attr('tabindex', tab_index);
             $ps_subwrap.addClass('ps-subwrap');
             $ps_range_base.addClass('ps-range-base');
             $ps_range_aligner.addClass('ps-range-aligner');
@@ -107,16 +158,37 @@ if (typeof Number.toInteger !== "function") {
         }
         initializeParts();
         // Some utilities
-        function addTransitionClass() {
-            //console.log('addTransitionClass');
-            $ps_subwrap.addClass('ps-transition').on('transitionend', removeTransitionClass);
-            transition_class_added = true;
-        }
         function removeTransitionClass() {
             //console.log('removeTransitionClass');
-            $ps_subwrap.removeClass('ps-transition').off('transitionend', removeTransitionClass);
+            $ps_subwrap
+                .removeClass('ps-transition')
+                .off('transitionend', removeTransitionClass);
             transition_class_added = false;
         }
+        function addTransitionClass() {
+            //console.log('addTransitionClass');
+            $ps_subwrap
+                .addClass('ps-transition')
+                .on('transitionend', removeTransitionClass);
+            transition_class_added = true;
+        }
+        // getComputedValue is used to get the cured value if the user didn't enter any specific value ->
+        // -> either via direct ui input or the value method (both of which sets user_set_value to true) ->
+        // this is part of the default chrome range input behaviour simulation
+        function getComputedValue(computed_max) {
+            var val = value;
+            if (computed_max === undef) {
+                computed_max = getComputedMax();
+            }
+            if (val > computed_max) {
+                val = computed_max;
+            }
+            if (val < min_value) {
+                val = min_value;
+            }
+            return val;
+        }
+        // updateStructure refreshes the slider's UI
         function updateStructure() {
             var offset_hor, offset_ver, tr_offset_ver;
             if ($ps_wrap[0].parentNode === null) {
@@ -137,42 +209,67 @@ if (typeof Number.toInteger !== "function") {
         }
         // Updates the slider UI
         function refreshControls(animate) {
-            var left_rate;
+            var rate;
             if ($ps_wrap[0].parentNode === null) {
                 return; // Bail out since it's not attached to the DOM
             }
-            left_rate = ((value - min_value) / (max_value - min_value));
+            rate = ((value - min_value) / (max_value - min_value));
             if (!!animate && (disabled === false) && (transition_class_added === false)) {
                 addTransitionClass();
             }
-            $ps_range_bar.css('right', (100 - (left_rate * 100)) + '%');
-            $ps_toggle_neck.css('left', (left_rate * 100) + '%');
+            $ps_range_bar.css('right', (100 - (rate * 100)) + '%');
+            $ps_toggle_neck.css('left', (rate * 100) + '%');
             return pebble_slider_object;
         }
         // Create the jQueryfied pebble slider object (http://api.jquery.com/jQuery/#working-with-plain-objects)
         $pebble_slider_object = $({
-            setTabIndex: function (index) {
-                index = Number.toInteger(index);
-                $ps_wrap.attr('tabindex', index);
-                return pebble_slider_object;
-            },
-            setMinValue: function (val) {
-                min_value = Number(val) || 0;
-                if (max_value <= min_value) {
-                    max_value = 100;
+            tabIndex: function (index) {
+                if (arguments.length > 0) {
+                    $bs_wrap.attr('tabindex', Number.toInteger(index));
+                    return pebble_slider_object;
                 }
-                return pebble_slider_object;
+                return tab_index;
             },
-            setMaxValue: function (val) {
-                val = Number(val) || 0;
-                max_value = (val <= min_value) ? 100 : val;
-                return pebble_slider_object;
+            min: function (val) {
+                if (arguments.length > 0) {
+                    min_value = Number(val) || 0;
+                    if (user_set_value) {
+                        max_sub = getComputedMax();
+                        if (value > max_sub) {
+                            value = max_sub;
+                        }
+                        if (value < min_value) {
+                            value = min_value;
+                        }
+                    }
+                    refreshControls(true);
+                    return pebble_slider_object;
+                }
+                return min_value;
+            },
+            max: function (val) {
+                if (arguments.length > 0) {
+                    max_value = Number(val) || 0;
+                    if (user_set_value) {
+                        max_sub = getComputedMax();
+                        if (value > max_sub) {
+                            value = max_sub;
+                        }
+                        if (value < min_value) {
+                            value = min_value;
+                        }
+                    }
+                    refreshControls(true);
+                    return pebble_slider_object;
+                }
+                return max_value;
             },
             val: function (val) {
+                max_sub = getComputedMax();
                 if (arguments.length > 0) {
                     val = Number(val) || 0;
-                    if (val > max_value) {
-                        val = max_value;
+                    if (val > max_sub) {
+                        val = max_sub;
                     }
                     if (val < min_value) {
                         val = min_value;
@@ -180,27 +277,11 @@ if (typeof Number.toInteger !== "function") {
                     value = val;
                     prev_input_value = val;
                     prev_change_value = val;
+                    user_set_value = true;
                     refreshControls(true);
                     return pebble_slider_object;
                 }
-                return value;
-            },
-            setValue: function (val) {
-                val = Number(val) || 0;
-                if (val > max_value) {
-                    val = max_value;
-                }
-                if (val < min_value) {
-                    val = min_value;
-                }
-                value = val;
-                prev_input_value = val;
-                prev_change_value = val;
-                refreshControls(true);
-                return pebble_slider_object;
-            },
-            getValue: function () {
-                return value;
+                return (user_set_value) ? value : getComputedValue(max_sub);
             },
             attachTo: function (arg) {
                 $ps_wrap.appendTo(arg);
@@ -223,44 +304,25 @@ if (typeof Number.toInteger !== "function") {
                 return $target;
             },
             refresh: refreshControls,
-            updateStructure: updateStructure,
+            //updateStructure: updateStructure,
             getElement: function () {
                 return $ps_wrap;
             }
         });
         pebble_slider_object = $pebble_slider_object[0];
-        Object.defineProperty($ps_wrap[0], 'value', {
-            get: function () {
-                return value;
-            },
-            set: function (val) {
-                val = Number(val) || 0;
-                if (val > max_value) {
-                    val = max_value;
-                }
-                if (val < min_value) {
-                    val = min_value;
-                }
-                value = val;
-                prev_input_value = val;
-                prev_change_value = val;
-                refreshControls(true);
-            },
-            configurable: true,
-            enumerable: false
-        });
         // Event-handling setup
         (function () {
             var allowance = 0, mouseDownMouseMoveHandler, docWinEventHandler, prevX = 0, prevY = 0;
             /*
-                The nowX-prevX-prevY tandem is a hack for browsers with stupid mousemove event implementation (Chrome, I'm looking at you!).
+                The nowX-nowY-prevX-prevY tandem is a hack for browsers with stupid mousemove event implementation (Chrome, I'm looking at you!).
                 What is this stupidity you're talking about?
                     Some browsers fire a single mousemove event of an element everytime a mousedown event of that same element fires.
                 LINK(S):
                     http://stackoverflow.com/questions/24670598/why-does-chrome-raise-a-mousemove-on-mousedown
             */
             mouseDownMouseMoveHandler = function (event) {
-                var nowX, left, width, left_rate;
+                var nowX, nowY, base, dimension, rate;
+                event.preventDefault(); // This somehow disables text-selection
                 switch (event.type) {
                 case 'touchstart':
                     //console.log('touchstart');
@@ -269,22 +331,33 @@ if (typeof Number.toInteger !== "function") {
                     event.pageY = event.originalEvent.touches[0].pageY;
                     /* falls through */
                 case 'mousedown':
-                    event.preventDefault(); // This somehow disables text-selection
+                    // Disable right-click
                     if (event.which === 3) {
                         return;
                     }
                     active = true;
                     nowX = event.pageX;
+                    nowY = event.pageY;
                     if (transition_class_added === false) {
                         addTransitionClass();
+                        //console.log('Hey');
                     }
                     $ps_toggle_neck.addClass('active');
                     prevX = nowX;
-                    prevY = event.pageY;
-                    $document.on('mousemove touchmove', mouseDownMouseMoveHandler).on('mouseup touchend', docWinEventHandler);
+                    prevY = nowY;
+                    $document
+                        .on('mousemove touchmove', mouseDownMouseMoveHandler)
+                        .on('mouseup touchend', docWinEventHandler);
                     $window.on('blur', docWinEventHandler);
                     if (event.target === $ps_toggle_handle[0] || event.target === $ps_toggle_neck[0]) {
-                        allowance = nowX - ($ps_toggle_neck.getX() - parseInt($ps_toggle_neck.css('margin-left'), 10));
+                        switch (type) {
+                        case 'horizontal':
+                            allowance = nowX - ($ps_toggle_neck.getX() - parseInt($ps_toggle_neck.css('margin-left'), 10));
+                            break;
+                        case 'vertical':
+                            allowance = nowY - ($ps_toggle_neck.getY() - parseInt($ps_toggle_neck.css('margin-top'), 10));
+                            break;
+                        }
                         return;
                     }
                     allowance = 0;
@@ -296,7 +369,8 @@ if (typeof Number.toInteger !== "function") {
                     /* falls through */
                 case 'mousemove':
                     nowX = event.pageX;
-                    if (nowX === prevX && event.pageY === prevY) {
+                    nowY = event.pageY;
+                    if (nowX === prevX && nowY === prevY) {
                         return; // Bail out, since it's a faux mousemove event
                     }
                     if (transition_class_added === true) {
@@ -304,18 +378,27 @@ if (typeof Number.toInteger !== "function") {
                     }
                     break;
                 }
-                width = $ps_range_limiter.width();
-                left = Math.floor((nowX - allowance) - $ps_range_limiter.getX());
-                if (left > width) {
-                    left = width;
-                } else if (left < 0) {
-                    left = 0;
+                dimension = $ps_range_limiter.width();
+                switch (type) {
+                case 'horizontal':
+                    base = Math.floor((nowX - allowance) - $ps_range_limiter.getX());
+                    break;
+                case 'vertical':
+                    //base = dimension - Math.floor((nowY - allowance) - ($ps_range_base.getY() + parseInt($ps_range_base.css('border-top-width'), 10)));
+                    base = Math.floor((nowY - allowance) - $ps_range_limiter.getY());
+                    break;
                 }
-                left_rate = left / width;
-                $ps_range_bar.css('right', (100 - (left_rate * 100)) + '%');
-                $ps_toggle_neck.css('left', (left_rate * 100) + '%');
+                base = Math.floor((nowX - allowance) - $ps_range_limiter.getX());
+                if (base > dimension) {
+                    base = dimension;
+                } else if (base < 0) {
+                    base = 0;
+                }
+                rate = base / dimension;
+                $ps_range_bar.css('right', (100 - (rate * 100)) + '%');
+                $ps_toggle_neck.css('left', (rate * 100) + '%');
                 prev_input_value = value;
-                value = min_value + (left_rate * (max_value - min_value));
+                value = min_value + (rate * (max_value - min_value));
                 if (disabled === false) {
                     if (value !== prev_input_value) {
                         trigger_param_list.push(value);
@@ -326,18 +409,21 @@ if (typeof Number.toInteger !== "function") {
             };
             docWinEventHandler = function () {
                 //console.log('docWinEventHandler');
+                var value_sub = (user_set_value) ? value : getComputedValue();
                 active = false;
                 if (disabled === false) {
-                    if (prev_change_value !== value) {
-                        trigger_param_list.push(value);
+                    if (prev_change_value !== value_sub) {
+                        trigger_param_list.push(value_sub);
                         $pebble_slider_object.triggerHandler('change', trigger_param_list);
                         trigger_param_list.length = 0;
-                        prev_change_value = value;
+                        prev_change_value = value_sub;
                     }
                 }
                 $ps_toggle_neck.removeClass('active');
                 $window.off('blur', docWinEventHandler);
-                $document.off('mousemove touchmove', mouseDownMouseMoveHandler).off('mouseup touchend', docWinEventHandler);
+                $document
+                    .off('mousemove touchmove', mouseDownMouseMoveHandler)
+                    .off('mouseup touchend', docWinEventHandler);
             };
             function enableDisableAid(event) {
                 switch (event.type) {
@@ -348,34 +434,15 @@ if (typeof Number.toInteger !== "function") {
                     break;
                 }
             }
-            function resetStructure() {
-                var parentNode = $ps_wrap[0].parentNode;
-                if (parentNode !== null) {
-                    $ps_wrap.detach();
-                }
-                $ps_wrap.removeAttr('class').removeAttr('style').removeAttr('tabindex');
-                $ps_subwrap.removeAttr('class').removeAttr('style');
-                $ps_range_base.removeAttr('class').removeAttr('style');
-                $ps_range_aligner.removeAttr('class').removeAttr('style');
-                $ps_range_sizer.removeAttr('class').removeAttr('style');
-                $ps_range_rail.removeAttr('class').removeAttr('style');
-                $ps_range_limiter.removeAttr('class').removeAttr('style');
-                $ps_range_bar.removeAttr('class').removeAttr('style');
-                $ps_toggle_overlay_and_limiter.removeAttr('class').removeAttr('style');
-                $ps_toggle_base.removeAttr('class').removeAttr('style');
-                $ps_toggle_rail.removeAttr('class').removeAttr('style');
-                $ps_toggle_neck.removeAttr('class').removeAttr('style');
-                $ps_toggle_handle.removeAttr('class').removeAttr('style');
-                initializeParts();
-                if (parentNode !== null) {
-                    $ps_wrap.appendTo(parentNode);
-                }
-            }
             pebble_slider_object.enable = function () {
                 if (disabled === true) {
                     disabled = false;
-                    $ps_wrap.removeClass('disabled').attr('tabindex', tabindex);
-                    $ps_subwrap.off('mousedown', enableDisableAid).on('mousedown touchstart', mouseDownMouseMoveHandler);
+                    $ps_wrap
+                        .removeClass('disabled')
+                        .attr('tabindex', tab_index);
+                    $ps_subwrap
+                        .off('mousedown', enableDisableAid)
+                        .on('mousedown touchstart', mouseDownMouseMoveHandler);
                 }
                 return pebble_slider_object;
             };
@@ -385,8 +452,12 @@ if (typeof Number.toInteger !== "function") {
                     if (active) {
                         docWinEventHandler(); // Manually trigger the 'mouseup / window blur' event handler
                     }
-                    $ps_wrap.addClass('disabled').removeAttr('tabindex');
-                    $ps_subwrap.off('mousedown touchstart', mouseDownMouseMoveHandler).on('mousedown', enableDisableAid);
+                    $ps_wrap
+                        .addClass('disabled')
+                        .removeAttr('tabindex');
+                    $ps_subwrap
+                        .off('mousedown touchstart', mouseDownMouseMoveHandler)
+                        .on('mousedown', enableDisableAid);
                     removeTransitionClass();
                 }
                 return pebble_slider_object;
@@ -403,6 +474,56 @@ if (typeof Number.toInteger !== "function") {
                 applier($_proto.off, $pebble_slider_object, arguments);
                 return pebble_slider_object;
             };
+            function resetStructure() {
+                var parentNode = $ps_wrap[0].parentNode;
+                if (parentNode !== null) {
+                    $ps_wrap.detach();
+                }
+                $ps_wrap
+                    .removeAttr('class')
+                    .removeAttr('style')
+                    .removeAttr('tabindex');
+                $ps_subwrap
+                    .removeAttr('class')
+                    .removeAttr('style');
+                $ps_range_base
+                    .removeAttr('class')
+                    .removeAttr('style');
+                $ps_range_aligner
+                    .removeAttr('class')
+                    .removeAttr('style');
+                $ps_range_sizer
+                    .removeAttr('class')
+                    .removeAttr('style');
+                $ps_range_rail
+                    .removeAttr('class')
+                    .removeAttr('style');
+                $ps_range_limiter
+                    .removeAttr('class')
+                    .removeAttr('style');
+                $ps_range_bar
+                    .removeAttr('class')
+                    .removeAttr('style');
+                $ps_toggle_overlay_and_limiter
+                    .removeAttr('class')
+                    .removeAttr('style');
+                $ps_toggle_base
+                    .removeAttr('class')
+                    .removeAttr('style');
+                $ps_toggle_rail
+                    .removeAttr('class')
+                    .removeAttr('style');
+                $ps_toggle_neck
+                    .removeAttr('class')
+                    .removeAttr('style');
+                $ps_toggle_handle
+                    .removeAttr('class')
+                    .removeAttr('style');
+                initializeParts();
+                if (parentNode !== null) {
+                    $ps_wrap.appendTo(parentNode);
+                }
+            }
             pebble_slider_object.reset = function (hard) {
                 pebble_slider_object.disable();
                 $pebble_slider_object.off();
@@ -421,18 +542,20 @@ if (typeof Number.toInteger !== "function") {
                     $ps_toggle_rail.off();
                     $ps_toggle_neck.off();
                     $ps_toggle_handle.off();
-                    min_value = 0;
-                    max_value = 100;
-                    value = (min_value >= max_value) ? min_value : (min_value + ((max_value - min_value) / 2));
-                    $ps_wrap.removeClass('disabled').attr('tabindex', tabindex);
-                    refreshControls(true);
                 }
+                min_value = default_min_val;
+                max_value = default_max_val;
+                value = default_val;
+                prev_input_value = value;
+                prev_change_value = value;
+                $ps_wrap.attr('tabindex', tab_index);
+                refreshControls(true);
                 pebble_slider_object.enable();
                 return pebble_slider_object;
             };
         }());
         //$ps_toggle_neck.on('transitionend', function () { alert('END'); });
-        $ps_wrap.data('host-object', pebble_slider_object).data('pebble-slider-object', pebble_slider_object);
+        $ps_wrap.data('ps:host-object', pebble_slider_object).data('pebble-slider-object', pebble_slider_object);
         pebble_slider_object.enable();
         return pebble_slider_object;
     };

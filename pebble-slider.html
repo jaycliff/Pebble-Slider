@@ -76,8 +76,8 @@
         </p>
         <p id="container" style="padding: 0px;">
             <script type="text/javascript">
-                var slider = $.createPebbleSlider().attachTo('#container');
-                slider.getElement().css('width', '90%');
+                var slider = $.createPebbleSlider({ type: 'vertical' }).attachTo('#container');
+                slider.getElement().css('height', '300px');
                 slider.on('input', function (event, value) {
                     console.log('input: ' + value);
                 });
@@ -86,7 +86,7 @@
                     //event.stopImmediatePropagation();
                     console.log(this);
                     console.log(event);
-                    console.log('change: ' + this.getValue());
+                    console.log('change: ' + this.val());
                     console.log('change2: ' + value);
                 });
                 var slider2 = $.createPebbleSlider().attachTo('#container'), $s2_handle = slider2.getElement().find('.ps-toggle-handle');
