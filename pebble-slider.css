@@ -101,10 +101,11 @@
 }
 
 .ps-vertical-type .ps-toggle-neck {
+    cursor: pointer;
     height: 20px;
     margin-left: -20px;
-    margin-top: -10px;
-    top: 50%;
+    margin-bottom: -10px;
+    bottom: 50%;
     width: 40px;
 }
 
