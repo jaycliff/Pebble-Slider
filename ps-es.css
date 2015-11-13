@@ -183,7 +183,7 @@ span.pebble-slider.ps-vertical-type span.ps-toggle-rail {
 }
 
 span.pebble-slider.ps-vertical-type span.ps-toggle-neck {
-    bottom: auto !important;
+    top: auto !important;
     left: 50% !important;
     right: auto !important;
 }
