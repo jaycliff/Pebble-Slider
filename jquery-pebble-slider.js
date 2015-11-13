@@ -81,7 +81,7 @@ if (typeof String.prototype.trim !== "function") {
             tab_index = default_tab_index,
             type = (is_options_valid && String(options.type).trim().toLowerCase() === 'vertical') ? 'vertical' : 'horizontal',
             type_class = (type === 'vertical') ? 'ps-vertical-type' : 'ps-horizontal-type',
-            css_dimension_prop = (type === 'vertical') ? 'height' : 'width',
+            //css_dimension_prop = (type === 'vertical') ? 'height' : 'width',
             active = false,
             disabled = true,
             //step = 0,
@@ -194,17 +194,29 @@ if (typeof String.prototype.trim !== "function") {
             if ($ps_wrap[0].parentNode === null) {
                 return; // Bail out since it's not attached to the DOM
             }
-            //$ps_toggle_neck.css('width', $ps_toggle_neck.height());
             offset_hor = ($ps_toggle_neck.outerWidth() / 2);
             offset_ver = ($ps_toggle_neck.outerHeight() / 2);
             tr_offset_ver = $ps_toggle_rail.outerHeight() / 2;
-            $ps_range_sizer.css('max-height', $ps_wrap.css('height'));
-            $ps_toggle_neck
-                .css('margin-left', ((offset_hor > 0) ? '-' + offset_hor : 0) + 'px')
-                .css('margin-top', (tr_offset_ver - (offset_ver + tr_offset_ver)) + 'px');
-                //.css('top', (((($ps_toggle_rail.outerHeight() / 2) - offset_ver) / $ps_toggle_rail.outerHeight()) * 100) + '%');
-            $ps_range_limiter.attr('style', 'left: ' + (offset_hor - parseInt($ps_range_rail.css('border-left'), 10)) + 'px !important; right: ' + (offset_hor - parseInt($ps_range_rail.css('border-right'), 10)) + 'px !important;');
-            $ps_toggle_overlay_and_limiter.attr('style', 'left: ' + offset_hor + 'px !important; right: ' + offset_hor + 'px !important;');
+            switch (type) {
+            case 'horizontal':
+                $ps_toggle_neck
+                    .css('margin-left', ((offset_hor > 0) ? '-' + offset_hor : 0) + 'px')
+                    .css('margin-top', (tr_offset_ver - (offset_ver + tr_offset_ver)) + 'px');
+                    //.css('top', (((($ps_toggle_rail.outerHeight() / 2) - offset_ver) / $ps_toggle_rail.outerHeight()) * 100) + '%');
+                $ps_range_sizer.css('max-height', $ps_wrap.css('height'));
+                $ps_range_limiter.attr('style', 'left: ' + (offset_hor - parseInt($ps_range_rail.css('border-left'), 10)) + 'px !important; right: ' + (offset_hor - parseInt($ps_range_rail.css('border-right'), 10)) + 'px !important;');
+                $ps_toggle_overlay_and_limiter.attr('style', 'left: ' + offset_hor + 'px !important; right: ' + offset_hor + 'px !important;');
+                break;
+            case 'vertical':
+                $ps_toggle_neck
+                    .css('margin-left', ((offset_hor > 0) ? '-' + offset_hor : 0) + 'px')
+                    .css('margin-bottom', (tr_offset_ver - (offset_ver + tr_offset_ver)) + 'px');
+                    //.css('top', (((($ps_toggle_rail.outerHeight() / 2) - offset_ver) / $ps_toggle_rail.outerHeight()) * 100) + '%');
+                $ps_range_sizer.css('max-width', $ps_wrap.css('width'));
+                $ps_range_limiter.attr('style', 'top: ' + (offset_ver - parseInt($ps_range_rail.css('border-top'), 10)) + 'px !important; bottom: ' + (offset_ver - parseInt($ps_range_rail.css('border-bottom'), 10)) + 'px !important;');
+                $ps_toggle_overlay_and_limiter.attr('style', 'top: ' + offset_ver + 'px !important; bottom: ' + offset_ver + 'px !important;');
+                break;
+            }
             return pebble_slider_object;
         }
         // Updates the slider UI
@@ -213,12 +225,25 @@ if (typeof String.prototype.trim !== "function") {
             if ($ps_wrap[0].parentNode === null) {
                 return; // Bail out since it's not attached to the DOM
             }
-            rate = ((value - min_value) / (max_value - min_value));
+            max_sub = getComputedMax();
+            if (max_sub <= min_value) {
+                rate = 0;
+            } else {
+                rate = ((value - min_value) / (max_sub - min_value));
+            }
             if (!!animate && (disabled === false) && (transition_class_added === false)) {
                 addTransitionClass();
             }
-            $ps_range_bar.css('right', (100 - (rate * 100)) + '%');
-            $ps_toggle_neck.css('left', (rate * 100) + '%');
+            switch (type) {
+            case 'horizontal':
+                $ps_range_bar.css('right', (100 - (rate * 100)) + '%');
+                $ps_toggle_neck.css('left', (rate * 100) + '%');
+                break;
+            case 'vertical':
+                $ps_range_bar.css('top', (100 - (rate * 100)) + '%');
+                $ps_toggle_neck.css('bottom', (rate * 100) + '%');
+                break;
+            }
             return pebble_slider_object;
         }
         // Create the jQueryfied pebble slider object (http://api.jquery.com/jQuery/#working-with-plain-objects)
@@ -321,7 +346,7 @@ if (typeof String.prototype.trim !== "function") {
                     http://stackoverflow.com/questions/24670598/why-does-chrome-raise-a-mousemove-on-mousedown
             */
             mouseDownMouseMoveHandler = function (event) {
-                var nowX, nowY, base, dimension, rate;
+                var nowX, nowY, base, dimension, rate, calculated_value;
                 event.preventDefault(); // This somehow disables text-selection
                 switch (event.type) {
                 case 'touchstart':
@@ -355,7 +380,7 @@ if (typeof String.prototype.trim !== "function") {
                             allowance = nowX - ($ps_toggle_neck.getX() - parseInt($ps_toggle_neck.css('margin-left'), 10));
                             break;
                         case 'vertical':
-                            allowance = nowY - ($ps_toggle_neck.getY() - parseInt($ps_toggle_neck.css('margin-top'), 10));
+                            allowance = nowY - ($ps_toggle_neck.getY() - parseInt($ps_toggle_neck.css('margin-bottom'), 10));
                             break;
                         }
                         return;
@@ -378,34 +403,38 @@ if (typeof String.prototype.trim !== "function") {
                     }
                     break;
                 }
-                dimension = $ps_range_limiter.width();
                 switch (type) {
                 case 'horizontal':
+                    dimension = $ps_range_limiter.width();
                     base = Math.floor((nowX - allowance) - $ps_range_limiter.getX());
                     break;
                 case 'vertical':
-                    //base = dimension - Math.floor((nowY - allowance) - ($ps_range_base.getY() + parseInt($ps_range_base.css('border-top-width'), 10)));
-                    base = Math.floor((nowY - allowance) - $ps_range_limiter.getY());
+                    dimension = $ps_range_limiter.height();
+                    base = dimension - Math.floor((nowY - allowance) - $ps_range_limiter.getY());
+                    //base = Math.floor((nowY - allowance) - $ps_range_limiter.getY());
                     break;
                 }
-                base = Math.floor((nowX - allowance) - $ps_range_limiter.getX());
                 if (base > dimension) {
                     base = dimension;
                 } else if (base < 0) {
                     base = 0;
                 }
                 rate = base / dimension;
-                $ps_range_bar.css('right', (100 - (rate * 100)) + '%');
-                $ps_toggle_neck.css('left', (rate * 100) + '%');
-                prev_input_value = value;
-                value = min_value + (rate * (max_value - min_value));
-                if (disabled === false) {
-                    if (value !== prev_input_value) {
-                        trigger_param_list.push(value);
-                        $pebble_slider_object.triggerHandler('input', trigger_param_list);
-                        trigger_param_list.length = 0;
+                max_sub = getComputedMax();
+                if (max_sub >= min_value) {
+                    prev_input_value = (user_set_value) ? value : getComputedValue(max_sub);
+                    calculated_value = min_value + (rate * (max_sub - min_value));
+                    if (disabled === false) {
+                        if (calculated_value !== prev_input_value) {
+                            user_set_value = true;
+                            value = calculated_value;
+                            trigger_param_list.push(value);
+                            $pebble_slider_object.triggerHandler('input', trigger_param_list);
+                            trigger_param_list.length = 0;
+                        }
                     }
                 }
+                refreshControls(true);
             };
             docWinEventHandler = function () {
                 //console.log('docWinEventHandler');
