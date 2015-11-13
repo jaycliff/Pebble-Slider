@@ -134,9 +134,9 @@
 }
 
 .ps-vertical-type .ps-transition .ps-toggle-neck {
-    transition: top 0.2s;
-    -moz-transition: top 0.2s;
-    -webkit-transition: top 0.2s;
-    -ms-transition: top 0.2s;
-    -o-transition: top 0.2s;
+    transition: bottom 0.2s;
+    -moz-transition: bottom 0.2s;
+    -webkit-transition: bottom 0.2s;
+    -ms-transition: bottom 0.2s;
+    -o-transition: bottom 0.2s;
 }
