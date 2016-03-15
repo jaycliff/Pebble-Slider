@@ -34,6 +34,11 @@
 
 .pebble-slider .ps-toggle-neck {
     background-color: transparent;
+    cursor: pointer;
+}
+
+.pebble-slider.disabled .ps-toggle-neck {
+    cursor: default;
 }
 
 .pebble-slider .ps-toggle-handle {
@@ -69,7 +74,6 @@
 }
 
 .ps-horizontal-type .ps-toggle-neck {
-    cursor: pointer;
     height: 10px;
     left: 50%;
     width: 10px;
@@ -101,7 +105,6 @@
 }
 
 .ps-vertical-type .ps-toggle-neck {
-    cursor: pointer;
     height: 20px;
     margin-left: -20px;
     margin-bottom: -10px;

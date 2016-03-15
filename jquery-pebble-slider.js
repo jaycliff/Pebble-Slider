@@ -75,6 +75,7 @@ if (typeof String.prototype.trim !== "function") {
             $ps_toggle_rail = $(document.createElement('span')),
             $ps_toggle_neck = $(document.createElement('span')),
             $ps_toggle_handle = $(document.createElement('span')),
+            $hot_swap_dummy = $(document.createElement('span')),
             trigger_param_list = [],
             $_proto = $.fn,
             default_tab_index = (is_options_valid && Number.toInteger(options.tabIndex)) || 0,
@@ -119,8 +120,9 @@ if (typeof String.prototype.trim !== "function") {
             if (default_val < min_value) {
                 default_val = min_value;
             }
+        } else {
+            default_val = (min_value >= max_value) ? min_value : (min_value + ((max_value - min_value) / 2));
         }
-        default_val = (min_value >= max_value) ? min_value : (min_value + ((max_value - min_value) / 2));
         value = default_val;
         prev_input_value = value;
         prev_change_value = value;
@@ -289,6 +291,25 @@ if (typeof String.prototype.trim !== "function") {
                 }
                 return max_value;
             },
+            value: function (val) {
+                max_sub = getComputedMax();
+                if (arguments.length > 0) {
+                    val = Number(val) || 0;
+                    if (val > max_sub) {
+                        val = max_sub;
+                    }
+                    if (val < min_value) {
+                        val = min_value;
+                    }
+                    value = val;
+                    prev_input_value = val;
+                    prev_change_value = val;
+                    user_set_value = true;
+                    refreshControls(true);
+                    return pebble_slider_object;
+                }
+                return (user_set_value) ? value : getComputedValue(max_sub);
+            },
             val: function (val) {
                 max_sub = getComputedMax();
                 if (arguments.length > 0) {
@@ -326,7 +347,7 @@ if (typeof String.prototype.trim !== "function") {
                 removeTransitionClass();
                 updateStructure();
                 refreshControls();
-                return $target;
+                return pebble_slider_object;
             },
             refresh: refreshControls,
             //updateStructure: updateStructure,
@@ -508,7 +529,8 @@ if (typeof String.prototype.trim !== "function") {
             function resetStructure() {
                 var parentNode = $ps_wrap[0].parentNode;
                 if (parentNode !== null) {
-                    $ps_wrap.detach();
+                    //$ps_wrap.detach();
+                    $ps_wrap.replaceWith($hot_swap_dummy);
                 }
                 $ps_wrap
                     .removeAttr('class')
@@ -552,7 +574,8 @@ if (typeof String.prototype.trim !== "function") {
                     .removeAttr('style');
                 initializeParts();
                 if (parentNode !== null) {
-                    $ps_wrap.appendTo(parentNode);
+                    //$ps_wrap.appendTo(parentNode);
+                    $hot_swap_dummy.replaceWith($ps_wrap);
                 }
             }
             pebble_slider_object.reset = function (hard) {
