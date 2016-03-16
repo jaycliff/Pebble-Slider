@@ -343,7 +343,7 @@ if (typeof String.prototype.trim !== "function") {
                 } else {
                     $target = $(arg);
                 }
-                $target = $target.replaceWith($ps_wrap);
+                $ps_wrap.data('ps:swapped-element', $target.replaceWith($ps_wrap));
                 removeTransitionClass();
                 updateStructure();
                 refreshControls();
