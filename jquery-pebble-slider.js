@@ -18,7 +18,9 @@
         jQuery library
         domxy
 */
-/*jshint bitwise: false*/
+/*global Boolean, Math, Number, document, window, jQuery, module*/
+/*jslint bitwise: false, unparam: true*/
+/*jshint bitwise: false, unused: false*/
 if (typeof Number.toInteger !== "function") {
     Number.toInteger = function (arg) {
         "use strict";
@@ -76,6 +78,8 @@ if (typeof String.prototype.trim !== "function") {
             $ps_toggle_neck = $(document.createElement('span')),
             $ps_toggle_handle = $(document.createElement('span')),
             $hot_swap_dummy = $(document.createElement('span')),
+            hasOwnProperty = Object.prototype.hasOwnProperty,
+            parts_list = [$ps_wrap, $ps_subwrap, $ps_range_base, $ps_range_aligner, $ps_range_sizer, $ps_range_rail, $ps_range_limiter, $ps_range_bar, $ps_toggle_overlay_and_limiter, $ps_toggle_base, $ps_toggle_rail, $ps_toggle_neck, $ps_toggle_handle],
             trigger_param_list = [],
             $_proto = $.fn,
             default_tab_index = (is_options_valid && Number.toInteger(options.tabIndex)) || 0,
@@ -100,7 +104,7 @@ if (typeof String.prototype.trim !== "function") {
             pebble_slider_object,
             $pebble_slider_object;
         //console.log(options);
-        if (is_options_valid && Object.prototype.hasOwnProperty.call(options, 'max')) {
+        if (is_options_valid && hasOwnProperty.call(options, 'max')) {
             default_max_val = Number(options.max) || 0;
             max_value = default_max_val;
         }
@@ -111,7 +115,7 @@ if (typeof String.prototype.trim !== "function") {
             }
             return max;
         }
-        if (is_options_valid && Object.prototype.hasOwnProperty.call(options, 'value')) {
+        if (is_options_valid && hasOwnProperty.call(options, 'value')) {
             max_sub = getComputedMax();
             default_val = Number(options.value) || 0;
             if (default_val > max_sub) {
@@ -176,7 +180,7 @@ if (typeof String.prototype.trim !== "function") {
         }
         // getComputedValue is used to get the cured value if the user didn't enter any specific value ->
         // -> either via direct ui input or the value method (both of which sets user_set_value to true) ->
-        // this is part of the default chrome range input behaviour simulation
+        // -> this is part of the default chrome range input behaviour simulation
         function getComputedValue(computed_max) {
             var val = value;
             if (computed_max === undef) {
@@ -252,7 +256,7 @@ if (typeof String.prototype.trim !== "function") {
         $pebble_slider_object = $({
             tabIndex: function (index) {
                 if (arguments.length > 0) {
-                    $bs_wrap.attr('tabindex', Number.toInteger(index));
+                    $ps_wrap.attr('tabindex', Number.toInteger(index));
                     return pebble_slider_object;
                 }
                 return tab_index;
@@ -527,51 +531,18 @@ if (typeof String.prototype.trim !== "function") {
                 return pebble_slider_object;
             };
             function resetStructure() {
-                var parentNode = $ps_wrap[0].parentNode;
+                var parentNode = $ps_wrap[0].parentNode, i, length, item;
                 if (parentNode !== null) {
                     //$ps_wrap.detach();
                     $ps_wrap.replaceWith($hot_swap_dummy);
                 }
-                $ps_wrap
-                    .removeAttr('class')
-                    .removeAttr('style')
-                    .removeAttr('tabindex');
-                $ps_subwrap
-                    .removeAttr('class')
-                    .removeAttr('style');
-                $ps_range_base
-                    .removeAttr('class')
-                    .removeAttr('style');
-                $ps_range_aligner
-                    .removeAttr('class')
-                    .removeAttr('style');
-                $ps_range_sizer
-                    .removeAttr('class')
-                    .removeAttr('style');
-                $ps_range_rail
-                    .removeAttr('class')
-                    .removeAttr('style');
-                $ps_range_limiter
-                    .removeAttr('class')
-                    .removeAttr('style');
-                $ps_range_bar
-                    .removeAttr('class')
-                    .removeAttr('style');
-                $ps_toggle_overlay_and_limiter
-                    .removeAttr('class')
-                    .removeAttr('style');
-                $ps_toggle_base
-                    .removeAttr('class')
-                    .removeAttr('style');
-                $ps_toggle_rail
-                    .removeAttr('class')
-                    .removeAttr('style');
-                $ps_toggle_neck
-                    .removeAttr('class')
-                    .removeAttr('style');
-                $ps_toggle_handle
-                    .removeAttr('class')
-                    .removeAttr('style');
+                for (i = 0, length = parts_list.length; i < length; i += 1) {
+                    item = parts_list[i];
+                    item.removeAttr('class').removeAttr('style');
+                    if (item === $ps_wrap) {
+                        item.removeAttr('tabindex');
+                    }
+                }
                 initializeParts();
                 if (parentNode !== null) {
                     //$ps_wrap.appendTo(parentNode);
@@ -579,23 +550,14 @@ if (typeof String.prototype.trim !== "function") {
                 }
             }
             pebble_slider_object.reset = function (hard) {
+                var i, length;
                 pebble_slider_object.disable();
                 $pebble_slider_object.off();
                 if (Boolean(hard) === true) {
                     resetStructure();
-                    $ps_wrap.off();
-                    $ps_subwrap.off();
-                    $ps_range_base.off();
-                    $ps_range_aligner.off();
-                    $ps_range_sizer.off();
-                    $ps_range_rail.off();
-                    $ps_range_limiter.off();
-                    $ps_range_bar.off();
-                    $ps_toggle_overlay_and_limiter.off();
-                    $ps_toggle_base.off();
-                    $ps_toggle_rail.off();
-                    $ps_toggle_neck.off();
-                    $ps_toggle_handle.off();
+                    for (i = 0, length = parts_list.length; i < length; i += 1) {
+                        parts_list[i].off();
+                    }
                 }
                 min_value = default_min_val;
                 max_value = default_max_val;
