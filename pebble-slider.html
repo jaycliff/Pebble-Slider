@@ -80,7 +80,7 @@
                     console.log('I am another button handler!');
                 }
                 $button.on('click', buttonHandler);
-                $button.on('click', buttonHandler);
+                $button.on('click', buttonHandler2);
                 //$button.off('', 456345);
             </script>
         </p>
@@ -94,9 +94,9 @@
                 slider.on('change', function (event, value) {
                     event.preventDefault();
                     //event.stopImmediatePropagation();
-                    console.log(this);
-                    console.log(event);
-                    console.log('change: ' + this.val());
+                    //console.log(this);
+                    //console.log(event);
+                    //console.log('change: ' + this.val());
                     console.log('change2: ' + value);
                 });
                 var slider2 = $.createPebbleSlider().attachTo('#container'), $s2_handle = slider2.getElement().find('.ps-toggle-handle');

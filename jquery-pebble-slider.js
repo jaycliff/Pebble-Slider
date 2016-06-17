@@ -29,6 +29,12 @@ if (typeof Number.toInteger !== "function") {
         return (arg !== arg) ? 0 : (arg === 0 || arg === Infinity || arg === -Infinity) ? arg : (arg > 0) ? Math.floor(arg) : Math.ceil(arg);
     };
 }
+if (typeof Number.isFinite !== "function") {
+    Number.isFinite = function isFinite(value) {
+        "use strict";
+        return typeof value === "number" && isFinite(value);
+    };
+}
 if (typeof String.prototype.trim !== "function") {
     String.prototype.trim = function () {
         "use strict";
@@ -263,34 +269,40 @@ if (typeof String.prototype.trim !== "function") {
             },
             min: function (val) {
                 if (arguments.length > 0) {
-                    min_value = Number(val) || 0;
-                    if (user_set_value) {
-                        max_sub = getComputedMax();
-                        if (value > max_sub) {
-                            value = max_sub;
+                    val = Number(val) || 0;
+                    if (Number.isFinite(val)) {
+                        min_value = val;
+                        if (user_set_value) {
+                            max_sub = getComputedMax();
+                            if (value > max_sub) {
+                                value = max_sub;
+                            }
+                            if (value < min_value) {
+                                value = min_value;
+                            }
                         }
-                        if (value < min_value) {
-                            value = min_value;
-                        }
+                        refreshControls(true);
                     }
-                    refreshControls(true);
                     return pebble_slider_object;
                 }
                 return min_value;
             },
             max: function (val) {
                 if (arguments.length > 0) {
-                    max_value = Number(val) || 0;
-                    if (user_set_value) {
-                        max_sub = getComputedMax();
-                        if (value > max_sub) {
-                            value = max_sub;
+                    val = Number(val) || 0;
+                    if (Number.isFinite(val)) {
+                        max_value = val;
+                        if (user_set_value) {
+                            max_sub = getComputedMax();
+                            if (value > max_sub) {
+                                value = max_sub;
+                            }
+                            if (value < min_value) {
+                                value = min_value;
+                            }
                         }
-                        if (value < min_value) {
-                            value = min_value;
-                        }
+                        refreshControls(true);
                     }
-                    refreshControls(true);
                     return pebble_slider_object;
                 }
                 return max_value;
@@ -362,7 +374,30 @@ if (typeof String.prototype.trim !== "function") {
         pebble_slider_object = $pebble_slider_object[0];
         // Event-handling setup
         (function () {
-            var allowance = 0, mouseDownMouseMoveHandler, docWinEventHandler, prevX = 0, prevY = 0;
+            var allowance = 0, genericEventHandler, docWinEventHandler, prevX = 0, prevY = 0;
+            function moveSlider(rate, animate) {
+                var calculated_value;
+                if (rate < 0) {
+                    rate = 0;
+                } else if (rate > 1) {
+                    rate = 1;
+                }
+                max_sub = getComputedMax();
+                if (max_sub >= min_value) {
+                    prev_input_value = (user_set_value) ? value : getComputedValue(max_sub);
+                    calculated_value = min_value + (rate * (max_sub - min_value));
+                    if (disabled === false) {
+                        if (calculated_value !== prev_input_value) {
+                            user_set_value = true;
+                            value = calculated_value;
+                            trigger_param_list.push(value);
+                            $pebble_slider_object.triggerHandler('input', trigger_param_list);
+                            trigger_param_list.length = 0;
+                        }
+                    }
+                }
+                refreshControls(animate);
+            }
             /*
                 The nowX-nowY-prevX-prevY tandem is a hack for browsers with stupid mousemove event implementation (Chrome, I'm looking at you!).
                 What is this stupidity you're talking about?
@@ -370,8 +405,8 @@ if (typeof String.prototype.trim !== "function") {
                 LINK(S):
                     http://stackoverflow.com/questions/24670598/why-does-chrome-raise-a-mousemove-on-mousedown
             */
-            mouseDownMouseMoveHandler = function (event) {
-                var nowX, nowY, base, dimension, rate, calculated_value;
+            genericEventHandler = function (event) {
+                var nowX, nowY, base, dimension, rate;
                 event.preventDefault(); // This somehow disables text-selection
                 switch (event.type) {
                 case 'touchstart':
@@ -396,7 +431,7 @@ if (typeof String.prototype.trim !== "function") {
                     prevX = nowX;
                     prevY = nowY;
                     $document
-                        .on('mousemove touchmove', mouseDownMouseMoveHandler)
+                        .on('mousemove touchmove', genericEventHandler)
                         .on('mouseup touchend', docWinEventHandler);
                     $window.on('blur', docWinEventHandler);
                     if (event.target === $ps_toggle_handle[0] || event.target === $ps_toggle_neck[0]) {
@@ -445,24 +480,9 @@ if (typeof String.prototype.trim !== "function") {
                     base = 0;
                 }
                 rate = base / dimension;
-                max_sub = getComputedMax();
-                if (max_sub >= min_value) {
-                    prev_input_value = (user_set_value) ? value : getComputedValue(max_sub);
-                    calculated_value = min_value + (rate * (max_sub - min_value));
-                    if (disabled === false) {
-                        if (calculated_value !== prev_input_value) {
-                            user_set_value = true;
-                            value = calculated_value;
-                            trigger_param_list.push(value);
-                            $pebble_slider_object.triggerHandler('input', trigger_param_list);
-                            trigger_param_list.length = 0;
-                        }
-                    }
-                }
-                refreshControls(true);
+                moveSlider(rate, true);
             };
-            docWinEventHandler = function () {
-                //console.log('docWinEventHandler');
+            function changeEvent() {
                 var value_sub = (user_set_value) ? value : getComputedValue();
                 active = false;
                 if (disabled === false) {
@@ -475,12 +495,79 @@ if (typeof String.prototype.trim !== "function") {
                     }
                     trigger_param_list.length = 0;
                 }
+            }
+            docWinEventHandler = function () {
+                //console.log('docWinEventHandler');
+                changeEvent();
                 $ps_toggle_neck.removeClass('active');
                 $window.off('blur', docWinEventHandler);
                 $document
-                    .off('mousemove touchmove', mouseDownMouseMoveHandler)
+                    .off('mousemove touchmove', genericEventHandler)
                     .off('mouseup touchend', docWinEventHandler);
             };
+            function psWrapMetaControlHandler(event) {
+                var rate, value_sub;
+                switch (event.type) {
+                case 'keydown':
+                    switch (event.which) {
+                    case 38:
+                    /* falls through */
+                    case 39:
+                        event.preventDefault();
+                        rate = ((((user_set_value) ? value : getComputedValue()) - min_value) / (max_sub - min_value));
+                        moveSlider(rate + 0.01);
+                        changeEvent();
+                        break;
+                    case 37:
+                    /* falls through */
+                    case 40:
+                        event.preventDefault();
+                        rate = ((((user_set_value) ? value : getComputedValue()) - min_value) / (max_sub - min_value));
+                        moveSlider(rate - 0.01);
+                        changeEvent();
+                        break;
+                    case 8:
+                        event.preventDefault();
+                        moveSlider(0);
+                        changeEvent();
+                        break;
+                    }
+                    break;
+                case 'keyup':
+                    switch (event.which) {
+                    case 37:
+                    /* falls through */
+                    case 38:
+                    /* falls through */
+                    case 39:
+                    /* falls through */
+                    case 40:
+                    /* falls through */
+                    case 8:
+                        $ps_toggle_neck.removeClass('active');
+                        break;
+                    }
+                    break;
+                case 'DOMMouseScroll':
+                    rate = ((((user_set_value) ? value : getComputedValue()) - min_value) / (max_sub - min_value));
+                    if (event.originalEvent.detail > 0) {
+                        moveSlider(rate - 0.01);
+                    } else {
+                        moveSlider(rate + 0.01);
+                    }
+                    changeEvent();
+                    break;
+                case 'mousewheel':
+                    rate = ((((user_set_value) ? value : getComputedValue()) - min_value) / (max_sub - min_value));
+                    if (event.originalEvent.wheelDelta < 0) {
+                        moveSlider(rate - 0.01);
+                    } else {
+                        moveSlider(rate + 0.01);
+                    }
+                    changeEvent();
+                    break;
+                }
+            }
             function enableDisableAid(event) {
                 switch (event.type) {
                 case 'touchstart':
@@ -495,10 +582,11 @@ if (typeof String.prototype.trim !== "function") {
                     disabled = false;
                     $ps_wrap
                         .removeClass('disabled')
+                        .on('keydown keyup mousewheel DOMMouseScroll', psWrapMetaControlHandler)
                         .attr('tabindex', tab_index);
                     $ps_subwrap
                         .off('mousedown', enableDisableAid)
-                        .on('mousedown touchstart', mouseDownMouseMoveHandler);
+                        .on('mousedown touchstart', genericEventHandler);
                 }
                 return pebble_slider_object;
             };
@@ -510,9 +598,10 @@ if (typeof String.prototype.trim !== "function") {
                     }
                     $ps_wrap
                         .addClass('disabled')
+                        .off('keydown keyup mousewheel DOMMouseScroll', psWrapMetaControlHandler)
                         .removeAttr('tabindex');
                     $ps_subwrap
-                        .off('mousedown touchstart', mouseDownMouseMoveHandler)
+                        .off('mousedown touchstart', genericEventHandler)
                         .on('mousedown', enableDisableAid);
                     removeTransitionClass();
                 }
