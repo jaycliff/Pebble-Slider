@@ -86,12 +86,14 @@
         </p>
         <p id="container" style="padding: 0px;">
             <script type="text/javascript">
-                var slider = $.createPebbleSlider({ type: 'vertical' }).attachTo('#container');
+                var slider = $.createPebbleSlider({ type: 'vertical', min: 1, max: 127 }).attachTo('#container');
                 slider.getElement().css('height', '300px');
                 slider.on('input', function (event, value) {
+                    value = value || this.value;
                     console.log('input: ' + value);
                 });
                 slider.on('change', function (event, value) {
+                    value = value || this.value;
                     event.preventDefault();
                     //event.stopImmediatePropagation();
                     //console.log(this);
@@ -99,17 +101,34 @@
                     //console.log('change: ' + this.val());
                     console.log('change2: ' + value);
                 });
-                var slider2 = $.createPebbleSlider().attachTo('#container'), $s2_handle = slider2.getElement().find('.ps-toggle-handle');
-                slider2.getElement().attr('id', 'slider2').width(640);
+                var slider2 = $.createPebbleSlider({ width: '100%', height: '20px' }).attachTo('#container'), $s2_handle = slider2.getElement().find('.ps-toggle-handle');
+                slider2.getElement().attr('id', 'slider2');
                 $s2_handle.text(slider2.val());
                 slider2.on('input', function (event, value) {
+                    value = value || this.value;
                     $s2_handle.text(Math.floor(value));
                     console.log(event);
                     console.log('oninput: ' + value);
+                }).on('mousedown mouseup mousewheel click keydown keyup keypress focus blur', function (event) {
+                    var event_type = event.type;
+                    console.log(event_type);
+                    switch (event_type) {
+                    case 'focus':
+                        this.trigger('blur');
+                        break;
+                    //case 'mousedown':
+                        /* falls through */
+                    case 'mousewheel':
+                        /* falls through */
+                    case 'keydown':
+                        event.preventDefault();
+                        break;
+                    }
                 });
             </script>
 
         </p>
+        <!--
         <p id="container-2" style="position: relative; height: 80%; display: block; margin-top: 10px;">
             <span class="pebble-slider ps-vertical-type ps-wrap">
                 <span class="ps-subwrap">
@@ -136,6 +155,7 @@
                 </span>
             </span>
         </p>
+        -->
         <!--
         <span class="pebble-slider ps-horizontal ps-wrap">
             <span class="ps-base">

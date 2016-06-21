@@ -68,6 +68,24 @@ if (typeof String.prototype.trim !== "function") {
             return this.offset().top;
         };
     }
+    function decimalDigitsLength(num) {
+        var string, dot_index;
+        if (typeof num !== "number") {
+            throw new TypeError('parameter must be a number');
+        }
+        string = String(num);
+        dot_index = string.indexOf('.');
+        if (dot_index < 0) {
+            return 0;
+        }
+        return string.length - (dot_index + 1);
+    }
+    function valueByStep(value, step) {
+        if (typeof step !== "number") {
+            step = 1;
+        }
+        return +((Math.round(value / step) * step).toFixed(decimalDigitsLength(step)));
+    }
     $.createPebbleSlider = function (options) {
         var is_options_valid = $.type(options) === 'object',
             $ps_wrap = $(document.createElement('span')),
@@ -97,45 +115,117 @@ if (typeof String.prototype.trim !== "function") {
             disabled = true,
             //step = 0,
             transition_class_added = false,
-            default_min_val = (is_options_valid && Number(options.min)) || 0,
-            default_max_val = 100,
-            default_val,
-            min_value = default_min_val,
-            max_value = default_max_val,
-            max_sub,
-            value,
-            user_set_value = false,
+            properties,
             prev_input_value,
             prev_change_value,
             pebble_slider_object,
             $pebble_slider_object;
-        //console.log(options);
-        if (is_options_valid && hasOwnProperty.call(options, 'max')) {
-            default_max_val = Number(options.max) || 0;
-            max_value = default_max_val;
-        }
-        function getComputedMax() {
-            var max = max_value;
-            if ((max < min_value) && (min_value < 100)) {
-                max = 100;
+        properties = (function () {
+            var obj = {},
+                temp,
+                user_set = false,
+                def_step = 1,
+                def_min = 0,
+                def_max = 100,
+                def_value,
+                do_median_value = true,
+                step = def_step,
+                min = def_min,
+                max = def_max,
+                value;
+            if (is_options_valid) {
+                if (hasOwnProperty.call(options, 'step')) {
+                    temp = Number(options.step) || 1;
+                    if (temp < 0) {
+                        temp = 1;
+                    }
+                    if (Number.isFinite(temp)) {
+                        def_step = temp;
+                        step = def_step;
+                    }
+                }
+                if (hasOwnProperty.call(options, 'max')) {
+                    temp = Number(options.max) || 0;
+                    if (Number.isFinite(temp)) {
+                        def_max = temp;
+                        max = def_max;
+                    }
+                }
+                if (hasOwnProperty.call(options, 'min')) {
+                    temp = Number(options.min) || 0;
+                    if (Number.isFinite(temp)) {
+                        def_min = temp;
+                        min = def_min;
+                    }
+                }
+                if (hasOwnProperty.call(options, 'value')) {
+                    temp = Number(options.value) || 0;
+                    if (Number.isFinite(temp)) {
+                        def_value = temp;
+                        value = def_value;
+                        do_median_value = false;
+                    }
+                }
             }
-            return max;
-        }
-        if (is_options_valid && hasOwnProperty.call(options, 'value')) {
-            max_sub = getComputedMax();
-            default_val = Number(options.value) || 0;
-            if (default_val > max_sub) {
-                default_val = max_sub;
+            if (do_median_value) {
+                def_value = (min >= max) ? min : (min + ((max - min) / 2));
+                value = def_value;
             }
-            if (default_val < min_value) {
-                default_val = min_value;
-            }
-        } else {
-            default_val = (min_value >= max_value) ? min_value : (min_value + ((max_value - min_value) / 2));
-        }
-        value = default_val;
-        prev_input_value = value;
-        prev_change_value = value;
+            Object.defineProperties(obj, {
+                "max": {
+                    get: function () {
+                        var c_max = max;
+                        if ((c_max < min) && (min < 100)) {
+                            c_max = 100;
+                        }
+                        return c_max;
+                    },
+                    set: function (val) {
+                        max = val;
+                    }
+                },
+                "min": {
+                    get: function () {
+                        return min;
+                    },
+                    set: function (val) {
+                        min = val;
+                    }
+                },
+                "value": {
+                    get: function () {
+                        var c_max = this.max, val = value;
+                        if (val > c_max) {
+                            val = c_max;
+                        }
+                        if (val < min) {
+                            val = min;
+                        }
+                        return (user_set) ? val : valueByStep(val, step);
+                    },
+                    set: function (val) {
+                        value = val;
+                        user_set = true;
+                    }
+                },
+                "step": {
+                    get: function () {
+                        return step;
+                    },
+                    set: function (val) {
+                        step = val;
+                    }
+                }
+            });
+            obj.reset = function () {
+                max = def_max;
+                min = def_min;
+                value = def_value;
+            };
+            return obj;
+        }());
+        prev_input_value = properties.value;
+        prev_change_value = prev_input_value;
         function initializeParts() {
             $ps_wrap
                 .addClass('pebble-slider')
@@ -167,6 +257,14 @@ if (typeof String.prototype.trim !== "function") {
             $ps_toggle_base.append($ps_toggle_rail);
             $ps_toggle_rail.append($ps_toggle_neck);
             $ps_toggle_neck.append($ps_toggle_handle);
+            if (is_options_valid) {
+                if (hasOwnProperty.call(options, 'width')) {
+                    $ps_wrap.css('width', options.width);
+                }
+                if (hasOwnProperty.call(options, 'height')) {
+                    $ps_wrap.css('height', options.height);
+                }
+            }
         }
         initializeParts();
         // Some utilities
@@ -183,22 +281,6 @@ if (typeof String.prototype.trim !== "function") {
                 .addClass('ps-transition')
                 .on('transitionend', removeTransitionClass);
             transition_class_added = true;
-        }
-        // getComputedValue is used to get the cured value if the user didn't enter any specific value ->
-        // -> either via direct ui input or the value method (both of which sets user_set_value to true) ->
-        // -> this is part of the default chrome range input behaviour simulation
-        function getComputedValue(computed_max) {
-            var val = value;
-            if (computed_max === undef) {
-                computed_max = getComputedMax();
-            }
-            if (val > computed_max) {
-                val = computed_max;
-            }
-            if (val < min_value) {
-                val = min_value;
-            }
-            return val;
         }
         // updateStructure refreshes the slider's UI
         function updateStructure() {
@@ -233,15 +315,17 @@ if (typeof String.prototype.trim !== "function") {
         }
         // Updates the slider UI
         function refreshControls(animate) {
-            var rate;
+            var rate, value_sub, max_sub, min_sub;
             if ($ps_wrap[0].parentNode === null) {
                 return; // Bail out since it's not attached to the DOM
             }
-            max_sub = getComputedMax();
-            if (max_sub <= min_value) {
+            value_sub = properties.value;
+            max_sub = properties.max;
+            min_sub = properties.min;
+            if (max_sub <= min_sub) {
                 rate = 0;
             } else {
-                rate = ((value - min_value) / (max_sub - min_value));
+                rate = ((value_sub - min_sub) / (max_sub - min_sub));
             }
             if (!!animate && (disabled === false) && (transition_class_added === false)) {
                 addTransitionClass();
@@ -258,7 +342,7 @@ if (typeof String.prototype.trim !== "function") {
             }
             return pebble_slider_object;
         }
-        // Create the jQueryfied pebble slider object (http://api.jquery.com/jQuery/#working-with-plain-objects)
+        // Create the jQuery-fied pebble slider object (http://api.jquery.com/jQuery/#working-with-plain-objects)
         $pebble_slider_object = $({
             tabIndex: function (index) {
                 if (arguments.length > 0) {
@@ -267,83 +351,60 @@ if (typeof String.prototype.trim !== "function") {
                 }
                 return tab_index;
             },
+            step: function (val) {
+                if (arguments.length > 0) {
+                    val = Number(val) || 1;
+                    if (val < 0) {
+                        val = 1;
+                    }
+                    if (Number.isFinite(val)) {
+                        properties.step = val;
+                    }
+                    return pebble_slider_object;
+                }
+                return properties.step;
+            },
             min: function (val) {
                 if (arguments.length > 0) {
                     val = Number(val) || 0;
                     if (Number.isFinite(val)) {
-                        min_value = val;
-                        if (user_set_value) {
-                            max_sub = getComputedMax();
-                            if (value > max_sub) {
-                                value = max_sub;
-                            }
-                            if (value < min_value) {
-                                value = min_value;
-                            }
-                        }
+                        properties.min = val;
                         refreshControls(true);
                     }
                     return pebble_slider_object;
                 }
-                return min_value;
+                return properties.min;
             },
             max: function (val) {
                 if (arguments.length > 0) {
                     val = Number(val) || 0;
                     if (Number.isFinite(val)) {
-                        max_value = val;
-                        if (user_set_value) {
-                            max_sub = getComputedMax();
-                            if (value > max_sub) {
-                                value = max_sub;
-                            }
-                            if (value < min_value) {
-                                value = min_value;
-                            }
-                        }
+                        properties.max = val;
                         refreshControls(true);
                     }
                     return pebble_slider_object;
                 }
-                return max_value;
+                return properties.max;
             },
-            value: function (val) {
-                max_sub = getComputedMax();
+            val: function (val, animate) {
+                var max_sub, min_sub;
                 if (arguments.length > 0) {
-                    val = Number(val) || 0;
+                    max_sub = properties.max;
+                    min_sub = properties.min;
+                    val = valueByStep(Number(val) || 0, properties.step);
                     if (val > max_sub) {
                         val = max_sub;
                     }
-                    if (val < min_value) {
-                        val = min_value;
+                    if (val < min_sub) {
+                        val = min_sub;
                     }
-                    value = val;
+                    properties.value = val;
                     prev_input_value = val;
                     prev_change_value = val;
-                    user_set_value = true;
-                    refreshControls(true);
+                    refreshControls(animate);
                     return pebble_slider_object;
                 }
-                return (user_set_value) ? value : getComputedValue(max_sub);
-            },
-            val: function (val) {
-                max_sub = getComputedMax();
-                if (arguments.length > 0) {
-                    val = Number(val) || 0;
-                    if (val > max_sub) {
-                        val = max_sub;
-                    }
-                    if (val < min_value) {
-                        val = min_value;
-                    }
-                    value = val;
-                    prev_input_value = val;
-                    prev_change_value = val;
-                    user_set_value = true;
-                    refreshControls(true);
-                    return pebble_slider_object;
-                }
-                return (user_set_value) ? value : getComputedValue(max_sub);
+                return properties.value;
             },
             attachTo: function (arg) {
                 $ps_wrap.appendTo(arg);
@@ -372,31 +433,60 @@ if (typeof String.prototype.trim !== "function") {
             }
         });
         pebble_slider_object = $pebble_slider_object[0];
+        Object.defineProperty(pebble_slider_object, 'value', {
+            get: function () {
+                return properties.value;
+            },
+            set: function (val) {
+                var max_sub = properties.max, min_sub = properties.min;
+                val = valueByStep(Number(val) || 0, properties.step);
+                if (val > max_sub) {
+                    val = max_sub;
+                }
+                if (val < min_sub) {
+                    val = min_sub;
+                }
+                properties.value = val;
+                prev_input_value = val;
+                prev_change_value = val;
+                refreshControls();
+            }
+        });
         // Event-handling setup
         (function () {
-            var allowance = 0, genericEventHandler, docWinEventHandler, prevX = 0, prevY = 0;
+            var allowance = 0, genericEventHandler, docWinEventHandler, psWrapMetaControlHandler, prevX = 0, prevY = 0, ps_do_not_trigger_map = {}, ps_wrap_do_not_trigger_map = {};
             function moveSlider(rate, animate) {
-                var calculated_value;
-                if (rate < 0) {
-                    rate = 0;
-                } else if (rate > 1) {
-                    rate = 1;
-                }
-                max_sub = getComputedMax();
-                if (max_sub >= min_value) {
-                    prev_input_value = (user_set_value) ? value : getComputedValue(max_sub);
-                    calculated_value = min_value + (rate * (max_sub - min_value));
+                var calculated_value, max_sub = properties.max, min_sub = properties.min;
+                if (max_sub >= min_sub) {
+                    prev_input_value = properties.value;
+                    calculated_value = min_sub + (rate * (max_sub - min_sub));
+                    calculated_value = valueByStep(calculated_value, properties.step);
                     if (disabled === false) {
                         if (calculated_value !== prev_input_value) {
-                            user_set_value = true;
-                            value = calculated_value;
-                            trigger_param_list.push(value);
+                            properties.value = calculated_value;
+                            trigger_param_list.push(calculated_value);
                             $pebble_slider_object.triggerHandler('input', trigger_param_list);
                             trigger_param_list.length = 0;
                         }
                     }
                 }
                 refreshControls(animate);
+            }
+            function containsTarget(target, node) {
+                var k, len, children;
+                if (target === node) {
+                    return true;
+                }
+                children = node.children;
+                len = children.length;
+                if (len > 0) {
+                    for (k = 0; k < len; k += 1) {
+                        if (containsTarget(target, children[k])) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
             /*
                 The nowX-nowY-prevX-prevY tandem is a hack for browsers with stupid mousemove event implementation (Chrome, I'm looking at you!).
@@ -408,7 +498,9 @@ if (typeof String.prototype.trim !== "function") {
             genericEventHandler = function (event) {
                 var nowX, nowY, base, dimension, rate;
                 event.preventDefault(); // This somehow disables text-selection
+                //console.log(event);
                 switch (event.type) {
+                // 'touchstart' and 'mousedown' events belong to $ps_wrap
                 case 'touchstart':
                     //console.log('touchstart');
                     // http://stackoverflow.com/questions/4780837/is-there-an-equivalent-to-e-pagex-position-for-touchstart-event-as-there-is-fo
@@ -416,8 +508,8 @@ if (typeof String.prototype.trim !== "function") {
                     event.pageY = event.originalEvent.touches[0].pageY;
                     /* falls through */
                 case 'mousedown':
-                    // Disable right-click
-                    if (event.which === 3) {
+                    // Prevent manual mousedown trigger and disable right-click. Manually-triggered events don't have an 'originalEvent' property
+                    if (event.originalEvent === undef || event.which === 3) {
                         return;
                     }
                     active = true;
@@ -428,13 +520,14 @@ if (typeof String.prototype.trim !== "function") {
                         //console.log('Hey');
                     }
                     $ps_toggle_neck.addClass('active');
+                    $ps_wrap.trigger('focus');
                     prevX = nowX;
                     prevY = nowY;
                     $document
                         .on('mousemove touchmove', genericEventHandler)
                         .on('mouseup touchend', docWinEventHandler);
                     $window.on('blur', docWinEventHandler);
-                    if (event.target === $ps_toggle_handle[0] || event.target === $ps_toggle_neck[0]) {
+                    if (containsTarget(event.target, $ps_toggle_handle[0])) {
                         switch (type) {
                         case 'horizontal':
                             allowance = nowX - ($ps_toggle_neck.getX() - parseInt($ps_toggle_neck.css('margin-left'), 10));
@@ -483,91 +576,132 @@ if (typeof String.prototype.trim !== "function") {
                 moveSlider(rate, true);
             };
             function changeEvent() {
-                var value_sub = (user_set_value) ? value : getComputedValue();
-                active = false;
-                if (disabled === false) {
-                    trigger_param_list.push(value_sub);
-                    // 'seek' event is like a forced-change event
-                    $pebble_slider_object.triggerHandler('seek', trigger_param_list);
-                    if (prev_change_value !== value_sub) {
-                        $pebble_slider_object.triggerHandler('change', trigger_param_list);
-                        prev_change_value = value_sub;
-                    }
-                    trigger_param_list.length = 0;
+                var value_sub = properties.value;
+                trigger_param_list.push(value_sub);
+                // 'seek' event is like a forced-change event
+                $pebble_slider_object.triggerHandler('seek', trigger_param_list);
+                if (prev_change_value !== value_sub) {
+                    $pebble_slider_object.triggerHandler('change', trigger_param_list);
+                    prev_change_value = value_sub;
                 }
+                trigger_param_list.length = 0;
             }
             docWinEventHandler = function () {
                 //console.log('docWinEventHandler');
-                changeEvent();
+                active = false;
+                if (disabled === false) {
+                    changeEvent();
+                }
                 $ps_toggle_neck.removeClass('active');
                 $window.off('blur', docWinEventHandler);
                 $document
                     .off('mousemove touchmove', genericEventHandler)
                     .off('mouseup touchend', docWinEventHandler);
             };
-            function psWrapMetaControlHandler(event) {
-                var rate, value_sub;
-                switch (event.type) {
-                case 'keydown':
-                    switch (event.which) {
-                    case 38:
-                    /* falls through */
-                    case 39:
-                        event.preventDefault();
-                        rate = ((((user_set_value) ? value : getComputedValue()) - min_value) / (max_sub - min_value));
-                        moveSlider(rate + 0.01);
-                        changeEvent();
-                        break;
-                    case 37:
-                    /* falls through */
-                    case 40:
-                        event.preventDefault();
-                        rate = ((((user_set_value) ? value : getComputedValue()) - min_value) / (max_sub - min_value));
-                        moveSlider(rate - 0.01);
-                        changeEvent();
-                        break;
-                    case 8:
-                        event.preventDefault();
-                        moveSlider(0);
-                        changeEvent();
-                        break;
-                    }
-                    break;
-                case 'keyup':
-                    switch (event.which) {
-                    case 37:
-                    /* falls through */
-                    case 38:
-                    /* falls through */
-                    case 39:
-                    /* falls through */
-                    case 40:
-                    /* falls through */
-                    case 8:
-                        $ps_toggle_neck.removeClass('active');
-                        break;
-                    }
-                    break;
-                case 'DOMMouseScroll':
-                    rate = ((((user_set_value) ? value : getComputedValue()) - min_value) / (max_sub - min_value));
-                    if (event.originalEvent.detail > 0) {
-                        moveSlider(rate - 0.01);
-                    } else {
-                        moveSlider(rate + 0.01);
-                    }
-                    changeEvent();
-                    break;
-                case 'mousewheel':
-                    rate = ((((user_set_value) ? value : getComputedValue()) - min_value) / (max_sub - min_value));
-                    if (event.originalEvent.wheelDelta < 0) {
-                        moveSlider(rate - 0.01);
-                    } else {
-                        moveSlider(rate + 0.01);
-                    }
-                    changeEvent();
-                    break;
+            psWrapMetaControlHandler = (function () {
+                var is_default_prevented = false;
+                function helper(event) {
+                    is_default_prevented = event.isDefaultPrevented();
                 }
-            }
+                return function psWrapMetaControlHandler(event) {
+                    var rate, min_sub, event_type = event.type;
+                    // trigger's extra parameters won't work with focus and blur events. See https://github.com/jquery/jquery/issues/1741
+                    if (!ps_do_not_trigger_map[event_type]) {
+                        ps_wrap_do_not_trigger_map[event_type] = true;
+                        $pebble_slider_object.one(event_type, helper);
+                        $pebble_slider_object.triggerHandler(event_type);
+                        ps_wrap_do_not_trigger_map[event_type] = false;
+                    }
+                    if (is_default_prevented) {
+                        // prevent event default behaviour and propagation
+                        event.stopImmediatePropagation();
+                        return false;
+                    }
+                    switch (event_type) {
+                    case 'keydown':
+                        //console.log(event.which);
+                        switch (event.which) {
+                        case 8: // Backspace key
+                        /* falls through */
+                        case 36: // Home key
+                            event.preventDefault();
+                            moveSlider(0);
+                            changeEvent();
+                            break;
+                        case 33: // Page up key
+                        /* falls through */
+                        case 38: // Up arrow key
+                        /* falls through */
+                        case 39: // Right arrow key
+                            event.preventDefault();
+                            min_sub = properties.min;
+                            rate = (((properties.value + properties.step) - min_sub) / (properties.max - min_sub));
+                            if (rate > 1) {
+                                rate = 1;
+                            }
+                            moveSlider(rate);
+                            changeEvent();
+                            break;
+                        case 34: // Page down key
+                        /* falls through */
+                        case 37: // Left arrow key
+                        /* falls through */
+                        case 40: // Down arrow key
+                            event.preventDefault();
+                            min_sub = properties.min;
+                            rate = (((properties.value - properties.step) - min_sub) / (properties.max - min_sub));
+                            if (rate < 0) {
+                                rate = 0;
+                            }
+                            moveSlider(rate);
+                            changeEvent();
+                            break;
+                        case 35: // End key
+                            event.preventDefault();
+                            moveSlider(1);
+                            changeEvent();
+                            break;
+                        }
+                        break;
+                    case 'DOMMouseScroll':
+                        if (event.originalEvent) {
+                            min_sub = properties.min;
+                            if (event.originalEvent.detail > 0) {
+                                rate = (((properties.value - properties.step) - min_sub) / (properties.max - min_sub));
+                                if (rate < 0) {
+                                    rate = 0;
+                                }
+                            } else {
+                                rate = (((properties.value + properties.step) - min_sub) / (properties.max - min_sub));
+                                if (rate > 1) {
+                                    rate = 1;
+                                }
+                            }
+                            moveSlider(rate);
+                            changeEvent();
+                        }
+                        break;
+                    case 'mousewheel':
+                        if (event.originalEvent) {
+                            min_sub = properties.min;
+                            if (event.originalEvent && event.originalEvent.wheelDelta < 0) {
+                                rate = (((properties.value - properties.step) - min_sub) / (properties.max - min_sub));
+                                if (rate < 0) {
+                                    rate = 0;
+                                }
+                            } else {
+                                rate = (((properties.value + properties.step) - min_sub) / (properties.max - min_sub));
+                                if (rate > 1) {
+                                    rate = 1;
+                                }
+                            }
+                            moveSlider(rate);
+                            changeEvent();
+                        }
+                        break;
+                    }
+                };
+            }());
             function enableDisableAid(event) {
                 switch (event.type) {
                 case 'touchstart':
@@ -577,30 +711,44 @@ if (typeof String.prototype.trim !== "function") {
                     break;
                 }
             }
+            // psEventHandler is mainly used for manually-triggered events (via the trigger / fire method)
+            function psEventHandler(event) {
+                var event_type = event.type;
+                // Prevent invocation when triggered manually from $ps_wrap
+                if (!ps_wrap_do_not_trigger_map[event_type]) {
+                    //console.log('triggered ' + event_type);
+                    ps_do_not_trigger_map[event_type] = true;
+                    $ps_wrap.trigger(event_type);
+                    ps_do_not_trigger_map[event_type] = false;
+                }
+            }
             pebble_slider_object.enable = function () {
                 if (disabled === true) {
                     disabled = false;
+                    // $pebble_slider_object's attached events should also be found on $ps_wrap's psWrapMetaControlHandler
+                    $pebble_slider_object.on('focus blur mousewheel DOMMouseScroll mousedown mouseup click keydown keyup keypress', psEventHandler);
+                    // Always attach psWrapMetaControlHandler first
                     $ps_wrap
                         .removeClass('disabled')
-                        .on('keydown keyup mousewheel DOMMouseScroll', psWrapMetaControlHandler)
-                        .attr('tabindex', tab_index);
-                    $ps_subwrap
-                        .off('mousedown', enableDisableAid)
-                        .on('mousedown touchstart', genericEventHandler);
+                        .on('focus blur mousewheel DOMMouseScroll mousedown mouseup click keydown keyup keypress', psWrapMetaControlHandler)
+                        .attr('tabindex', tab_index)
+                        .on('mousedown touchstart', genericEventHandler)
+                        .off('mousedown', enableDisableAid);
                 }
                 return pebble_slider_object;
             };
             pebble_slider_object.disable = function () {
                 if (disabled === false) {
                     disabled = true;
+                    // $pebble_slider_object's attached events should also be found on $ps_wrap's psWrapMetaControlHandler
+                    $pebble_slider_object.off('focus blur mousewheel DOMMouseScroll mousedown mouseup click keydown keyup keypress', psEventHandler);
                     if (active) {
                         docWinEventHandler(); // Manually trigger the 'mouseup / window blur' event handler
                     }
                     $ps_wrap
                         .addClass('disabled')
-                        .off('keydown keyup mousewheel DOMMouseScroll', psWrapMetaControlHandler)
-                        .removeAttr('tabindex');
-                    $ps_subwrap
+                        .off('focus blur mousewheel DOMMouseScroll mousedown mouseup click keydown keyup keypress', psWrapMetaControlHandler)
+                        .removeAttr('tabindex')
                         .off('mousedown touchstart', genericEventHandler)
                         .on('mousedown', enableDisableAid);
                     removeTransitionClass();
@@ -619,6 +767,12 @@ if (typeof String.prototype.trim !== "function") {
                 applier($_proto.off, $pebble_slider_object, arguments);
                 return pebble_slider_object;
             };
+            function trigger() {
+                applier($_proto.trigger, $pebble_slider_object, arguments);
+                return pebble_slider_object;
+            }
+            pebble_slider_object.trigger = trigger;
+            pebble_slider_object.fire = trigger;
             function resetStructure() {
                 var parentNode = $ps_wrap[0].parentNode, i, length, item;
                 if (parentNode !== null) {
@@ -648,12 +802,11 @@ if (typeof String.prototype.trim !== "function") {
                         parts_list[i].off();
                     }
                 }
-                min_value = default_min_val;
-                max_value = default_max_val;
-                value = default_val;
-                prev_input_value = value;
-                prev_change_value = value;
+                properties.reset();
+                prev_input_value = properties.value;
+                prev_change_value = prev_change_value;
                 $ps_wrap.attr('tabindex', tab_index);
+                updateStructure();
                 refreshControls(true);
                 pebble_slider_object.enable();
                 return pebble_slider_object;
@@ -662,6 +815,7 @@ if (typeof String.prototype.trim !== "function") {
         //$ps_toggle_neck.on('transitionend', function () { alert('END'); });
         $ps_wrap.data('ps:host-object', pebble_slider_object).data('pebble-slider-object', pebble_slider_object);
         pebble_slider_object.enable();
+        refreshControls(false);
         return pebble_slider_object;
     };
 }(window, (typeof jQuery === "function" && jQuery) || (typeof module === "object" && typeof module.exports === "function" && module.exports)));
