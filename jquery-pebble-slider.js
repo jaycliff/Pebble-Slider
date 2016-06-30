@@ -110,10 +110,8 @@ if (typeof String.prototype.trim !== "function") {
             tab_index = default_tab_index,
             type = (is_options_valid && String(options.type).trim().toLowerCase() === 'vertical') ? 'vertical' : 'horizontal',
             type_class = (type === 'vertical') ? 'ps-vertical-type' : 'ps-horizontal-type',
-            //css_dimension_prop = (type === 'vertical') ? 'height' : 'width',
             active = false,
             disabled = true,
-            //step = 0,
             transition_class_added = false,
             properties,
             prev_input_value,
@@ -364,23 +362,23 @@ if (typeof String.prototype.trim !== "function") {
                 }
                 return properties.step;
             },
-            min: function (val) {
+            min: function (val, animate) {
                 if (arguments.length > 0) {
                     val = Number(val) || 0;
                     if (Number.isFinite(val)) {
                         properties.min = val;
-                        refreshControls(true);
+                        refreshControls(animate);
                     }
                     return pebble_slider_object;
                 }
                 return properties.min;
             },
-            max: function (val) {
+            max: function (val, animate) {
                 if (arguments.length > 0) {
                     val = Number(val) || 0;
                     if (Number.isFinite(val)) {
                         properties.max = val;
-                        refreshControls(true);
+                        refreshControls(animate);
                     }
                     return pebble_slider_object;
                 }
