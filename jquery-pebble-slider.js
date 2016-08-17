@@ -517,9 +517,11 @@ if (typeof String.prototype.trim !== "function") {
                     .off('mouseup touchend', docWinEventHandler);
             };
             (function () {
-                var is_default_prevented = false;
+                var is_default_prevented = false, is_propagation_stopped = false, is_immediate_propagation_stopped = false;
                 function helper(event) {
                     is_default_prevented = event.isDefaultPrevented();
+                    is_propagation_stopped = event.isPropagationStopped();
+                    is_immediate_propagation_stopped = event.isImmediatePropagationStopped();
                 }
                 genericEventHandler = function (event) {
                     var nowX, nowY, base, dimension, rate;
@@ -609,6 +611,11 @@ if (typeof String.prototype.trim !== "function") {
                         $pebble_slider_object.one(event_type, helper).triggerHandler(event_type);
                         ps_wrap_do_not_trigger_map[event_type] = false;
                     }
+                    if (is_immediate_propagation_stopped) {
+                        event.isImmediatePropagationStopped();
+                    } else if (is_propagation_stopped) {
+                        event.stopPropagation();
+                    }
                     if (is_default_prevented) {
                         return;
                     }
@@ -667,6 +674,7 @@ if (typeof String.prototype.trim !== "function") {
                                     rate = 0;
                                 } else {
                                     event.preventDefault();
+                                    event.stopPropagation();
                                 }
                             } else {
                                 rate = (((properties.value + properties.step) - min_sub) / (properties.max - min_sub));
@@ -674,6 +682,7 @@ if (typeof String.prototype.trim !== "function") {
                                     rate = 1;
                                 } else {
                                     event.preventDefault();
+                                    event.stopPropagation();
                                 }
                             }
                             moveSlider(rate);
@@ -689,6 +698,7 @@ if (typeof String.prototype.trim !== "function") {
                                     rate = 0;
                                 } else {
                                     event.preventDefault();
+                                    event.stopPropagation();
                                 }
                             } else {
                                 rate = (((properties.value + properties.step) - min_sub) / (properties.max - min_sub));
@@ -696,6 +706,7 @@ if (typeof String.prototype.trim !== "function") {
                                     rate = 1;
                                 } else {
                                     event.preventDefault();
+                                    event.stopPropagation();
                                 }
                             }
                             moveSlider(rate);
