@@ -493,86 +493,6 @@ if (typeof String.prototype.trim !== "function") {
                 LINK(S):
                     http://stackoverflow.com/questions/24670598/why-does-chrome-raise-a-mousemove-on-mousedown
             */
-            genericEventHandler = function (event) {
-                var nowX, nowY, base, dimension, rate;
-                event.preventDefault(); // This somehow disables text-selection
-                //console.log(event);
-                switch (event.type) {
-                // 'touchstart' and 'mousedown' events belong to $ps_wrap
-                case 'touchstart':
-                    //console.log('touchstart');
-                    // http://stackoverflow.com/questions/4780837/is-there-an-equivalent-to-e-pagex-position-for-touchstart-event-as-there-is-fo
-                    event.pageX = event.originalEvent.touches[0].pageX;
-                    event.pageY = event.originalEvent.touches[0].pageY;
-                    /* falls through */
-                case 'mousedown':
-                    // Prevent manual mousedown trigger and disable right-click. Manually-triggered events don't have an 'originalEvent' property
-                    if (event.originalEvent === undef || event.which === 3) {
-                        return;
-                    }
-                    active = true;
-                    nowX = event.pageX;
-                    nowY = event.pageY;
-                    if (transition_class_added === false) {
-                        addTransitionClass();
-                        //console.log('Hey');
-                    }
-                    $ps_toggle_neck.addClass('active');
-                    $ps_wrap.trigger('focus');
-                    prevX = nowX;
-                    prevY = nowY;
-                    $document
-                        .on('mousemove touchmove', genericEventHandler)
-                        .on('mouseup touchend', docWinEventHandler);
-                    $window.on('blur', docWinEventHandler);
-                    if (containsTarget(event.target, $ps_toggle_handle[0])) {
-                        switch (type) {
-                        case 'horizontal':
-                            allowance = nowX - ($ps_toggle_neck.getX() - parseInt($ps_toggle_neck.css('margin-left'), 10));
-                            break;
-                        case 'vertical':
-                            allowance = nowY - ($ps_toggle_neck.getY() - parseInt($ps_toggle_neck.css('margin-bottom'), 10));
-                            break;
-                        }
-                        return;
-                    }
-                    allowance = 0;
-                    break;
-                case 'touchmove':
-                    //console.log('touchmove');
-                    event.pageX = event.originalEvent.touches[0].pageX;
-                    event.pageY = event.originalEvent.touches[0].pageY;
-                    /* falls through */
-                case 'mousemove':
-                    nowX = event.pageX;
-                    nowY = event.pageY;
-                    if (nowX === prevX && nowY === prevY) {
-                        return; // Bail out, since it's a faux mousemove event
-                    }
-                    if (transition_class_added === true) {
-                        removeTransitionClass();
-                    }
-                    break;
-                }
-                switch (type) {
-                case 'horizontal':
-                    dimension = $ps_range_limiter.width();
-                    base = Math.floor((nowX - allowance) - $ps_range_limiter.getX());
-                    break;
-                case 'vertical':
-                    dimension = $ps_range_limiter.height();
-                    base = dimension - Math.floor((nowY - allowance) - $ps_range_limiter.getY());
-                    //base = Math.floor((nowY - allowance) - $ps_range_limiter.getY());
-                    break;
-                }
-                if (base > dimension) {
-                    base = dimension;
-                } else if (base < 0) {
-                    base = 0;
-                }
-                rate = base / dimension;
-                moveSlider(rate, true);
-            };
             function changeEvent() {
                 var value_sub = properties.value;
                 trigger_param_list.push(value_sub);
@@ -596,24 +516,101 @@ if (typeof String.prototype.trim !== "function") {
                     .off('mousemove touchmove', genericEventHandler)
                     .off('mouseup touchend', docWinEventHandler);
             };
-            psWrapMetaControlHandler = (function () {
+            (function () {
                 var is_default_prevented = false;
                 function helper(event) {
                     is_default_prevented = event.isDefaultPrevented();
                 }
-                return function psWrapMetaControlHandler(event) {
+                genericEventHandler = function (event) {
+                    var nowX, nowY, base, dimension, rate;
+                    event.preventDefault(); // This somehow disables text-selection
+                    //console.log(event);
+                    switch (event.type) {
+                    // 'touchstart' and 'mousedown' events belong to $ps_wrap
+                    case 'touchstart':
+                        //console.log('touchstart');
+                        // http://stackoverflow.com/questions/4780837/is-there-an-equivalent-to-e-pagex-position-for-touchstart-event-as-there-is-fo
+                        event.pageX = event.originalEvent.touches[0].pageX;
+                        event.pageY = event.originalEvent.touches[0].pageY;
+                        /* falls through */
+                    case 'mousedown':
+                        // Prevent manual mousedown trigger and disable right-click. Manually-triggered events don't have an 'originalEvent' property
+                        if (event.originalEvent === undef || event.which === 3 || is_default_prevented) {
+                            return;
+                        }
+                        active = true;
+                        nowX = event.pageX;
+                        nowY = event.pageY;
+                        if (transition_class_added === false) {
+                            addTransitionClass();
+                            //console.log('Hey');
+                        }
+                        $ps_toggle_neck.addClass('active');
+                        $ps_wrap.trigger('focus');
+                        prevX = nowX;
+                        prevY = nowY;
+                        $document
+                            .on('mousemove touchmove', genericEventHandler)
+                            .on('mouseup touchend', docWinEventHandler);
+                        $window.on('blur', docWinEventHandler);
+                        if (containsTarget(event.target, $ps_toggle_handle[0])) {
+                            switch (type) {
+                            case 'horizontal':
+                                allowance = nowX - ($ps_toggle_neck.getX() - parseInt($ps_toggle_neck.css('margin-left'), 10));
+                                break;
+                            case 'vertical':
+                                allowance = nowY - ($ps_toggle_neck.getY() - parseInt($ps_toggle_neck.css('margin-bottom'), 10));
+                                break;
+                            }
+                            return;
+                        }
+                        allowance = 0;
+                        break;
+                    case 'touchmove':
+                        //console.log('touchmove');
+                        event.pageX = event.originalEvent.touches[0].pageX;
+                        event.pageY = event.originalEvent.touches[0].pageY;
+                        /* falls through */
+                    case 'mousemove':
+                        nowX = event.pageX;
+                        nowY = event.pageY;
+                        if (nowX === prevX && nowY === prevY) {
+                            return; // Bail out, since it's a faux mousemove event
+                        }
+                        if (transition_class_added === true) {
+                            removeTransitionClass();
+                        }
+                        break;
+                    }
+                    switch (type) {
+                    case 'horizontal':
+                        dimension = $ps_range_limiter.width();
+                        base = Math.floor((nowX - allowance) - $ps_range_limiter.getX());
+                        break;
+                    case 'vertical':
+                        dimension = $ps_range_limiter.height();
+                        base = dimension - Math.floor((nowY - allowance) - $ps_range_limiter.getY());
+                        //base = Math.floor((nowY - allowance) - $ps_range_limiter.getY());
+                        break;
+                    }
+                    if (base > dimension) {
+                        base = dimension;
+                    } else if (base < 0) {
+                        base = 0;
+                    }
+                    rate = base / dimension;
+                    moveSlider(rate, true);
+                };
+                psWrapMetaControlHandler = function psWrapMetaControlHandler(event) {
                     var rate, min_sub, event_type = event.type;
                     // trigger's extra parameters won't work with focus and blur events. See https://github.com/jquery/jquery/issues/1741
                     if (!ps_do_not_trigger_map[event_type]) {
                         ps_wrap_do_not_trigger_map[event_type] = true;
-                        $pebble_slider_object.one(event_type, helper);
-                        $pebble_slider_object.triggerHandler(event_type);
+                        $pebble_slider_object.one(event_type, helper).triggerHandler(event_type);
                         ps_wrap_do_not_trigger_map[event_type] = false;
                     }
                     if (is_default_prevented) {
-                        // prevent event default behaviour and propagation
-                        event.stopImmediatePropagation();
-                        return false;
+                        return;
                     }
                     switch (event_type) {
                     case 'keydown':
@@ -668,11 +665,15 @@ if (typeof String.prototype.trim !== "function") {
                                 rate = (((properties.value - properties.step) - min_sub) / (properties.max - min_sub));
                                 if (rate < 0) {
                                     rate = 0;
+                                } else {
+                                    event.preventDefault();
                                 }
                             } else {
                                 rate = (((properties.value + properties.step) - min_sub) / (properties.max - min_sub));
                                 if (rate > 1) {
                                     rate = 1;
+                                } else {
+                                    event.preventDefault();
                                 }
                             }
                             moveSlider(rate);
@@ -686,11 +687,15 @@ if (typeof String.prototype.trim !== "function") {
                                 rate = (((properties.value - properties.step) - min_sub) / (properties.max - min_sub));
                                 if (rate < 0) {
                                     rate = 0;
+                                } else {
+                                    event.preventDefault();
                                 }
                             } else {
                                 rate = (((properties.value + properties.step) - min_sub) / (properties.max - min_sub));
                                 if (rate > 1) {
                                     rate = 1;
+                                } else {
+                                    event.preventDefault();
                                 }
                             }
                             moveSlider(rate);

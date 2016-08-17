@@ -84,13 +84,15 @@
                 //$button.off('', 456345);
             </script>
         </p>
-        <p id="container" style="padding: 0px;">
+        <p id="container" style="padding: 0px; height: 150px; overflow-y: auto;">
             <script type="text/javascript">
                 var slider = $.createPebbleSlider({ type: 'vertical', min: 1, max: 127 }).attachTo('#container');
                 slider.getElement().css('height', '300px');
                 slider.on('input', function (event, value) {
                     value = value || this.value;
                     console.log('input: ' + value);
+                }).on('mousewheel', function (event) {
+                    event.preventDefault();
                 });
                 slider.on('change', function (event, value) {
                     value = value || this.value;
