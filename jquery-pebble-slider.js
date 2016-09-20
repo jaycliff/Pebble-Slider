@@ -101,6 +101,8 @@ if (typeof String.prototype.trim !== "function") {
             $ps_range_sizer = $(document.createElement('span')),
             $ps_range_rail = $(document.createElement('span')),
             $ps_range_limiter = $(document.createElement('span')),
+            $ps_range_negative_spectrum_bar = $(document.createElement('span')),
+            $ps_range_positive_spectrum_bar = $(document.createElement('span')),
             $ps_range_bar = $(document.createElement('span')),
             $ps_toggle_overlay_and_limiter = $(document.createElement('span')),
             $ps_toggle_base = $(document.createElement('span')),
@@ -109,7 +111,7 @@ if (typeof String.prototype.trim !== "function") {
             $ps_toggle_handle = $(document.createElement('span')),
             $hot_swap_dummy = $(document.createElement('span')),
             hasOwnProperty = Object.prototype.hasOwnProperty,
-            parts_list = [$ps_wrap, $ps_subwrap, $ps_range_base, $ps_range_aligner, $ps_range_sizer, $ps_range_rail, $ps_range_limiter, $ps_range_bar, $ps_toggle_overlay_and_limiter, $ps_toggle_base, $ps_toggle_rail, $ps_toggle_neck, $ps_toggle_handle],
+            parts_list = [$ps_wrap, $ps_subwrap, $ps_range_base, $ps_range_aligner, $ps_range_sizer, $ps_range_rail, $ps_range_limiter, $ps_range_negative_spectrum_bar, $ps_range_positive_spectrum_bar, $ps_range_bar, $ps_toggle_overlay_and_limiter, $ps_toggle_base, $ps_toggle_rail, $ps_toggle_neck, $ps_toggle_handle],
             trigger_param_list = [],
             $_proto = $.fn,
             default_tab_index = (is_options_valid && Number.toInteger(options.tabIndex)) || 0,
@@ -247,6 +249,8 @@ if (typeof String.prototype.trim !== "function") {
             $ps_range_sizer.addClass('ps-range-sizer');
             $ps_range_rail.addClass('ps-range-rail');
             $ps_range_limiter.addClass('ps-range-limiter');
+            $ps_range_negative_spectrum_bar.addClass('ps-range-negative-spectrum-bar');
+            $ps_range_positive_spectrum_bar.addClass('ps-range-positive-spectrum-bar');
             $ps_range_bar.addClass('ps-range-bar');
             $ps_toggle_overlay_and_limiter.addClass('ps-toggle-overlay-and-limiter');
             $ps_toggle_base.addClass('ps-toggle-base');
@@ -260,7 +264,10 @@ if (typeof String.prototype.trim !== "function") {
             $ps_range_aligner.append($ps_range_sizer);
             $ps_range_sizer.append($ps_range_rail);
             $ps_range_rail.append($ps_range_limiter);
-            $ps_range_limiter.append($ps_range_bar);
+            $ps_range_limiter
+                .append($ps_range_bar)
+                .append($ps_range_negative_spectrum_bar)
+                .append($ps_range_positive_spectrum_bar);
             $ps_subwrap.append($ps_toggle_overlay_and_limiter);
             $ps_toggle_overlay_and_limiter.append($ps_toggle_base);
             $ps_toggle_base.append($ps_toggle_rail);

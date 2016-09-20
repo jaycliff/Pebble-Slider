@@ -28,6 +28,14 @@
     border: solid 1px #a0a0a0;
 }
 
+.pebble-slider .ps-range-negative-spectrum-bar {
+    background-color: #ffaaaa;
+}
+
+.pebble-slider .ps-range-positive-spectrum-bar {
+    background-color: #aaffaa;
+}
+
 .pebble-slider .ps-range-bar {
     background-color: #c0c0c0;
 }

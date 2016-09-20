@@ -72,6 +72,8 @@ span.pebble-slider span.ps-range-limiter {
     position: absolute !important;
 }
 
+span.pebble-slider span.ps-range-negative-spectrum-bar,
+span.pebble-slider span.ps-range-positive-spectrum-bar,
 span.pebble-slider span.ps-range-bar {
     display: block !important;
     margin: 0 !important;
@@ -123,6 +125,22 @@ span.pebble-slider.ps-horizontal-type span.ps-range-limiter {
     top: 0 !important;
 }
 
+span.pebble-slider.ps-horizontal-type span.ps-range-negative-spectrum-bar,
+span.pebble-slider.ps-horizontal-type span.ps-range-positive-spectrum-bar {
+    bottom: 0 !important;
+    height: auto !important;
+    top: 0 !important;
+    width: 0;
+}
+
+span.pebble-slider.ps-horizontal-type span.ps-range-negative-spectrum-bar {
+    right: 50%;
+}
+
+span.pebble-slider.ps-horizontal-type span.ps-range-positive-spectrum-bar {
+    left: 50%;
+}
+
 span.pebble-slider.ps-horizontal-type span.ps-range-bar {
     bottom: 0 !important;
     height: auto !important;
@@ -160,6 +178,23 @@ span.pebble-slider.ps-vertical-type span.ps-range-sizer {
 span.pebble-slider.ps-vertical-type span.ps-range-limiter {
     left: 0 !important;
     right: 0 !important;
+}
+
+span.pebble-slider.ps-vertical-type span.ps-range-negative-spectrum-bar,
+span.pebble-slider.ps-vertical-type span.ps-range-positive-spectrum-bar {
+    left: 0 !important;
+    right: 0 !important;
+    width: auto !important;
+}
+
+span.pebble-slider.ps-vertical-type span.ps-range-negative-spectrum-bar {
+    bottom: auto !important;
+    top: 50% !important;
+}
+
+span.pebble-slider.ps-vertical-type span.ps-range-positive-spectrum-bar {
+    bottom: 50% !important;
+    top: auto !important;
 }
 
 span.pebble-slider.ps-vertical-type span.ps-range-bar {
