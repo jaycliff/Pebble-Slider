@@ -84,15 +84,22 @@
                 //$button.off('', 456345);
             </script>
         </p>
-        <p id="container" style="padding: 0px; height: 150px; overflow-y: auto;">
+        <p id="container" style="padding: 0px; height: 150px;">
             <script type="text/javascript">
                 var slider = $.createPebbleSlider({ type: 'vertical', min: 1, max: 127 }).attachTo('#container');
                 slider.getElement().css('height', '300px');
                 slider.on('input', function (event, value) {
                     value = value || this.value;
                     console.log('input: ' + value);
-                }).on('mousewheel', function (event) {
-                    event.preventDefault();
+                }).on('mousewheel focus', function (event) {
+                    switch (event.type) {
+                    case 'mousewheel':
+                        //event.preventDefault();
+                        break;
+                    case 'focus':
+                        this.trigger('blur');
+                        break;
+                    }
                 });
                 slider.on('change', function (event, value) {
                     value = value || this.value;
@@ -103,7 +110,7 @@
                     //console.log('change: ' + this.val());
                     console.log('change2: ' + value);
                 });
-                var slider2 = $.createPebbleSlider({ width: '100%', height: '20px' }).attachTo('#container'), $s2_handle = slider2.getElement().find('.ps-toggle-handle');
+                var slider2 = $.createPebbleSlider({ width: '100%', height: '20px' }).attachTo('#container'), $s2_handle = slider2.getElement().css('box-sizing', 'border-box').find('.ps-toggle-handle');
                 slider2.getElement().attr('id', 'slider2');
                 $s2_handle.text(slider2.val());
                 slider2.on('input', function (event, value) {
@@ -122,6 +129,7 @@
                         /* falls through */
                     case 'mousewheel':
                         /* falls through */
+                        break;
                     case 'keydown':
                         event.preventDefault();
                         break;

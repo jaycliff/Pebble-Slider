@@ -22,7 +22,7 @@
 /*jslint bitwise: false, unparam: true*/
 /*jshint bitwise: false, unused: false*/
 if (typeof Number.toInteger !== "function") {
-    Number.toInteger = function (arg) {
+    Number.toInteger = function toInteger(arg) {
         "use strict";
         // ToInteger conversion
         arg = Number(arg);
@@ -36,18 +36,20 @@ if (typeof Number.isFinite !== "function") {
     };
 }
 if (typeof String.prototype.trim !== "function") {
-    String.prototype.trim = function () {
+    String.prototype.trim = function trim() {
         "use strict";
         return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
     };
 }
-(function (window, $, undef) {
+(function createPebbleSliderSetup(window, $, undef) {
     "use strict";
     var $document = $(document),
         $window = $(window),
+        floor = Math.floor,
+        round = Math.round,
         applier = (function () {
             var list = [];
-            return function (func, obj, args) {
+            return function applier(func, obj, args) {
                 var i, length = args.length, result;
                 list.length = 0;
                 for (i = 0; i < length; i += 1) {
@@ -59,12 +61,12 @@ if (typeof String.prototype.trim !== "function") {
             };
         }());
     if (typeof $.fn.getX !== "function") {
-        $.fn.getX = function () {
+        $.fn.getX = function getX() {
             return this.offset().left;
         };
     }
     if (typeof $.fn.getY !== "function") {
-        $.fn.getY = function () {
+        $.fn.getY = function getY() {
             return this.offset().top;
         };
     }
@@ -80,13 +82,17 @@ if (typeof String.prototype.trim !== "function") {
         }
         return string.length - (dot_index + 1);
     }
-    function valueByStep(value, step) {
-        if (typeof step !== "number") {
-            step = 1;
+    function valueByStep(value, step, round_type) {
+        var multiplier = Math.pow(10, decimalDigitsLength(step));
+        if (!round_type) {
+            round_type = 'round';
         }
-        return +((Math.round(value / step) * step).toFixed(decimalDigitsLength(step)));
+        //console.log('VALUE: ' + value + ', STEP: ' + step + ', MULTIPLIER: ' + multiplier);
+        value = round(value * multiplier);
+        step = round(step * multiplier);
+        return (Math[round_type](value / step) * step) / multiplier;
     }
-    $.createPebbleSlider = function (options) {
+    $.createPebbleSlider = function createPebbleSlider(options) {
         var is_options_valid = $.type(options) === 'object',
             $ps_wrap = $(document.createElement('span')),
             $ps_subwrap = $(document.createElement('span')),
@@ -182,6 +188,11 @@ if (typeof String.prototype.trim !== "function") {
                         max = val;
                     }
                 },
+                "maxRaw": {
+                    get: function () {
+                        return max;
+                    }
+                },
                 "min": {
                     get: function () {
                         return min;
@@ -215,7 +226,7 @@ if (typeof String.prototype.trim !== "function") {
                     }
                 }
             });
-            obj.reset = function () {
+            obj.reset = function reset() {
                 max = def_max;
                 min = def_min;
                 value = def_value;
@@ -280,8 +291,8 @@ if (typeof String.prototype.trim !== "function") {
                 .on('transitionend', removeTransitionClass);
             transition_class_added = true;
         }
-        // updateStructure refreshes the slider's UI
-        function updateStructure() {
+        // refresh, uh, refreshes the slider's UI
+        function refresh(update_controls, animate) {
             var offset_hor, offset_ver, tr_offset_ver;
             if ($ps_wrap[0].parentNode === null) {
                 return; // Bail out since it's not attached to the DOM
@@ -309,10 +320,13 @@ if (typeof String.prototype.trim !== "function") {
                 $ps_toggle_overlay_and_limiter.attr('style', 'top: ' + offset_ver + 'px !important; bottom: ' + offset_ver + 'px !important;');
                 break;
             }
+            if (update_controls) {
+                updateControls(animate);
+            }
             return pebble_slider_object;
         }
-        // Updates the slider UI
-        function refreshControls(animate) {
+        // updateControls, uh, updates the slider controls
+        function updateControls(animate) {
             var rate, value_sub, max_sub, min_sub;
             if ($ps_wrap[0].parentNode === null) {
                 return; // Bail out since it's not attached to the DOM
@@ -342,14 +356,14 @@ if (typeof String.prototype.trim !== "function") {
         }
         // Create the jQuery-fied pebble slider object (http://api.jquery.com/jQuery/#working-with-plain-objects)
         $pebble_slider_object = $({
-            tabIndex: function (index) {
+            tabIndex: function tabIndex(index) {
                 if (arguments.length > 0) {
                     $ps_wrap.attr('tabindex', Number.toInteger(index));
                     return pebble_slider_object;
                 }
                 return tab_index;
             },
-            step: function (val) {
+            step: function step(val) {
                 if (arguments.length > 0) {
                     val = Number(val) || 1;
                     if (val < 0) {
@@ -362,36 +376,37 @@ if (typeof String.prototype.trim !== "function") {
                 }
                 return properties.step;
             },
-            min: function (val, animate) {
+            min: function min(val, animate) {
                 if (arguments.length > 0) {
                     val = Number(val) || 0;
                     if (Number.isFinite(val)) {
                         properties.min = val;
-                        refreshControls(animate);
+                        updateControls(animate);
                     }
                     return pebble_slider_object;
                 }
                 return properties.min;
             },
-            max: function (val, animate) {
+            max: function max(val, animate) {
                 if (arguments.length > 0) {
                     val = Number(val) || 0;
                     if (Number.isFinite(val)) {
                         properties.max = val;
-                        refreshControls(animate);
+                        updateControls(animate);
                     }
                     return pebble_slider_object;
                 }
-                return properties.max;
+                return properties.maxRaw;
             },
-            val: function (val, animate) {
-                var max_sub, min_sub;
+            val: function value(val, animate) {
+                var max_sub, min_sub, step_sub;
                 if (arguments.length > 0) {
                     max_sub = properties.max;
                     min_sub = properties.min;
-                    val = valueByStep(Number(val) || 0, properties.step);
+                    step_sub = properties.step;
+                    val = valueByStep(Number(val) || 0, step_sub);
                     if (val > max_sub) {
-                        val = max_sub;
+                        val = valueByStep(max_sub, step_sub, 'floor');
                     }
                     if (val < min_sub) {
                         val = min_sub;
@@ -399,19 +414,18 @@ if (typeof String.prototype.trim !== "function") {
                     properties.value = val;
                     prev_input_value = val;
                     prev_change_value = val;
-                    refreshControls(animate);
+                    updateControls(animate);
                     return pebble_slider_object;
                 }
                 return properties.value;
             },
-            attachTo: function (arg) {
+            attachTo: function attachTo(arg) {
                 $ps_wrap.appendTo(arg);
                 removeTransitionClass();
-                updateStructure();
-                refreshControls();
+                refresh(true);
                 return pebble_slider_object;
             },
-            switchTo: function (arg) {
+            switchTo: function switchTo(arg) {
                 var $target;
                 if (arg instanceof $) {
                     $target = arg;
@@ -420,13 +434,11 @@ if (typeof String.prototype.trim !== "function") {
                 }
                 $ps_wrap.data('ps:swapped-element', $target.replaceWith($ps_wrap));
                 removeTransitionClass();
-                updateStructure();
-                refreshControls();
+                refresh(true);
                 return pebble_slider_object;
             },
-            refresh: refreshControls,
-            //updateStructure: updateStructure,
-            getElement: function () {
+            refresh: refresh,
+            getElement: function getElement() {
                 return $ps_wrap;
             }
         });
@@ -436,10 +448,10 @@ if (typeof String.prototype.trim !== "function") {
                 return properties.value;
             },
             set: function (val) {
-                var max_sub = properties.max, min_sub = properties.min;
-                val = valueByStep(Number(val) || 0, properties.step);
+                var step_sub = properties.step, max_sub = properties.max, min_sub = properties.min;
+                val = valueByStep(Number(val) || 0, step_sub);
                 if (val > max_sub) {
-                    val = max_sub;
+                    val = valueByStep(max_sub, step_sub, 'floor');
                 }
                 if (val < min_sub) {
                     val = min_sub;
@@ -447,7 +459,7 @@ if (typeof String.prototype.trim !== "function") {
                 properties.value = val;
                 prev_input_value = val;
                 prev_change_value = val;
-                refreshControls();
+                updateControls();
             }
         });
         // Event-handling setup
@@ -458,7 +470,7 @@ if (typeof String.prototype.trim !== "function") {
                 if (max_sub >= min_sub) {
                     prev_input_value = properties.value;
                     calculated_value = min_sub + (rate * (max_sub - min_sub));
-                    calculated_value = valueByStep(calculated_value, properties.step);
+                    calculated_value = valueByStep(calculated_value, properties.step, 'floor');
                     if (disabled === false) {
                         if (calculated_value !== prev_input_value) {
                             properties.value = calculated_value;
@@ -468,7 +480,7 @@ if (typeof String.prototype.trim !== "function") {
                         }
                     }
                 }
-                refreshControls(animate);
+                updateControls(animate);
             }
             function containsTarget(target, node) {
                 var k, len, children;
@@ -504,7 +516,7 @@ if (typeof String.prototype.trim !== "function") {
                 }
                 trigger_param_list.length = 0;
             }
-            docWinEventHandler = function () {
+            docWinEventHandler = function docWinEventHandler() {
                 //console.log('docWinEventHandler');
                 active = false;
                 if (disabled === false) {
@@ -523,7 +535,7 @@ if (typeof String.prototype.trim !== "function") {
                     is_propagation_stopped = event.isPropagationStopped();
                     is_immediate_propagation_stopped = event.isImmediatePropagationStopped();
                 }
-                genericEventHandler = function (event) {
+                genericEventHandler = function genericEventHandler(event) {
                     var nowX, nowY, base, dimension, rate;
                     event.preventDefault(); // This somehow disables text-selection
                     //console.log(event);
@@ -587,12 +599,12 @@ if (typeof String.prototype.trim !== "function") {
                     switch (type) {
                     case 'horizontal':
                         dimension = $ps_range_limiter.width();
-                        base = Math.floor((nowX - allowance) - $ps_range_limiter.getX());
+                        base = floor((nowX - allowance) - $ps_range_limiter.getX());
                         break;
                     case 'vertical':
                         dimension = $ps_range_limiter.height();
-                        base = dimension - Math.floor((nowY - allowance) - $ps_range_limiter.getY());
-                        //base = Math.floor((nowY - allowance) - $ps_range_limiter.getY());
+                        base = dimension - floor((nowY - allowance) - $ps_range_limiter.getY());
+                        //base = floor((nowY - allowance) - $ps_range_limiter.getY());
                         break;
                     }
                     if (base > dimension) {
@@ -736,7 +748,7 @@ if (typeof String.prototype.trim !== "function") {
                     ps_do_not_trigger_map[event_type] = false;
                 }
             }
-            pebble_slider_object.enable = function () {
+            pebble_slider_object.enable = function enable() {
                 if (disabled === true) {
                     disabled = false;
                     // $pebble_slider_object's attached events should also be found on $ps_wrap's psWrapMetaControlHandler
@@ -751,7 +763,7 @@ if (typeof String.prototype.trim !== "function") {
                 }
                 return pebble_slider_object;
             };
-            pebble_slider_object.disable = function () {
+            pebble_slider_object.disable = function disable() {
                 if (disabled === false) {
                     disabled = true;
                     // $pebble_slider_object's attached events should also be found on $ps_wrap's psWrapMetaControlHandler
@@ -769,15 +781,15 @@ if (typeof String.prototype.trim !== "function") {
                 }
                 return pebble_slider_object;
             };
-            pebble_slider_object.on = function () {
+            pebble_slider_object.on = function on() {
                 applier($_proto.on, $pebble_slider_object, arguments);
                 return pebble_slider_object;
             };
-            pebble_slider_object.one = function () {
+            pebble_slider_object.one = function one() {
                 applier($_proto.one, $pebble_slider_object, arguments);
                 return pebble_slider_object;
             };
-            pebble_slider_object.off = function () {
+            pebble_slider_object.off = function off() {
                 applier($_proto.off, $pebble_slider_object, arguments);
                 return pebble_slider_object;
             };
@@ -806,7 +818,7 @@ if (typeof String.prototype.trim !== "function") {
                     $hot_swap_dummy.replaceWith($ps_wrap);
                 }
             }
-            pebble_slider_object.reset = function (hard) {
+            pebble_slider_object.reset = function reset(hard) {
                 var i, length;
                 pebble_slider_object.disable();
                 $pebble_slider_object.off();
@@ -820,8 +832,7 @@ if (typeof String.prototype.trim !== "function") {
                 prev_input_value = properties.value;
                 prev_change_value = prev_change_value;
                 $ps_wrap.attr('tabindex', tab_index);
-                updateStructure();
-                refreshControls(true);
+                refresh(true, true);
                 pebble_slider_object.enable();
                 return pebble_slider_object;
             };
@@ -829,7 +840,7 @@ if (typeof String.prototype.trim !== "function") {
         //$ps_toggle_neck.on('transitionend', function () { alert('END'); });
         $ps_wrap.data('ps:host-object', pebble_slider_object).data('pebble-slider-object', pebble_slider_object);
         pebble_slider_object.enable();
-        refreshControls(false);
+        updateControls(false);
         return pebble_slider_object;
     };
 }(window, (typeof jQuery === "function" && jQuery) || (typeof module === "object" && typeof module.exports === "function" && module.exports)));
