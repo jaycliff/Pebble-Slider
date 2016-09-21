@@ -334,7 +334,7 @@ if (typeof String.prototype.trim !== "function") {
         }
         // updateControls, uh, updates the slider controls
         function updateControls(animate) {
-            var rate, value_sub, max_sub, min_sub;
+            var rate, value_sub, max_sub, min_sub, min_abs, min_max_length, nsb_offset, psb_offset;
             if ($ps_wrap[0].parentNode === null) {
                 return; // Bail out since it's not attached to the DOM
             }
@@ -349,12 +349,27 @@ if (typeof String.prototype.trim !== "function") {
             if (!!animate && (disabled === false) && (transition_class_added === false)) {
                 addTransitionClass();
             }
+            min_abs = Math.abs(min_sub);
+            min_max_length = (min_abs + Math.abs(max_sub));
+            psb_offset = (min_abs / min_max_length) * 100;
+            nsb_offset = 100 - psb_offset;
             switch (type) {
             case 'horizontal':
+                $ps_range_negative_spectrum_bar.css('right', nsb_offset + '%');
+                $ps_range_positive_spectrum_bar.css('left', psb_offset + '%');
+                if (value_sub < 0) {
+                    $ps_range_negative_spectrum_bar.css('width', ((Math.abs(value_sub) / min_max_length) * 100) + '%');
+                    $ps_range_positive_spectrum_bar.css('width', 0);
+                } else {
+                    $ps_range_negative_spectrum_bar.css('width', 0);
+                    $ps_range_positive_spectrum_bar.css('width', ((value_sub / min_max_length) * 100) + '%');
+                }
                 $ps_range_bar.css('right', (100 - (rate * 100)) + '%');
                 $ps_toggle_neck.css('left', (rate * 100) + '%');
                 break;
             case 'vertical':
+                $ps_range_negative_spectrum_bar.css('top', nsb_offset + '%');
+                $ps_range_positive_spectrum_bar.css('bottom', psb_offset + '%');
                 $ps_range_bar.css('top', (100 - (rate * 100)) + '%');
                 $ps_toggle_neck.css('bottom', (rate * 100) + '%');
                 break;
