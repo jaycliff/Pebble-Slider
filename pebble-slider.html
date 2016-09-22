@@ -31,7 +31,6 @@
 .ps-vertical-type .ps-range-bar,
 .ps-horizontal-type .ps-range-bar {
     background-color: #99d1ff;
-    opacity: 0;
 }
 .ps-vertical-type .ps-toggle-neck,
 .ps-horizontal-type .ps-toggle-neck {
@@ -88,7 +87,7 @@
         <p id="container" style="padding: 0px; height: 150px;">
             <script type="text/javascript">
                 var slider = $.createPebbleSlider({ type: 'vertical', min: 1, max: 127 }).attachTo('#container');
-                slider.getElement().css('height', '300px');
+                slider.getElement().css('height', '300px').attr('id', 'slider-1');
                 slider.on('input', function (event, value) {
                     value = value || this.value;
                     console.log('input: ' + value);
@@ -111,8 +110,8 @@
                     //console.log('change: ' + this.val());
                     console.log('change2: ' + value);
                 });
-                var slider2 = $.createPebbleSlider({ width: '100%', height: '20px' }).attachTo('#container'), $s2_handle = slider2.getElement().css('box-sizing', 'border-box').find('.ps-toggle-handle');
-                slider2.getElement().attr('id', 'slider2');
+                var slider2 = $.createPebbleSlider({ width: '100%', height: '20px', spectrum: true }).attachTo('#container'), $s2_handle = slider2.getElement().css('box-sizing', 'border-box').find('.ps-toggle-handle');
+                slider2.getElement().attr('id', 'slider-2');
                 $s2_handle.text(slider2.val());
                 slider2.on('input', function (event, value) {
                     value = value || this.value;
@@ -136,6 +135,8 @@
                         break;
                     }
                 });
+                var slider3 = $.createPebbleSlider({ width: '100%', height: '20px', spectrum: true, min: 0, max: 30, value: 21 }).attachTo('#container');
+                slider3.getElement().css('box-sizing', 'border-box').attr('id', 'slider-3');
             </script>
 
         </p>

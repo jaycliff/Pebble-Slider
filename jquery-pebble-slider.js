@@ -249,8 +249,8 @@ if (typeof String.prototype.trim !== "function") {
             $ps_range_sizer.addClass('ps-range-sizer');
             $ps_range_rail.addClass('ps-range-rail');
             $ps_range_limiter.addClass('ps-range-limiter');
-            $ps_range_negative_spectrum_bar.addClass('ps-range-negative-spectrum-bar');
-            $ps_range_positive_spectrum_bar.addClass('ps-range-positive-spectrum-bar');
+            $ps_range_negative_spectrum_bar.addClass('ps-range-negative-spectrum-bar').addClass('hidden');
+            $ps_range_positive_spectrum_bar.addClass('ps-range-positive-spectrum-bar').addClass('hidden');
             $ps_range_bar.addClass('ps-range-bar');
             $ps_toggle_overlay_and_limiter.addClass('ps-toggle-overlay-and-limiter');
             $ps_toggle_base.addClass('ps-toggle-base');
@@ -280,6 +280,19 @@ if (typeof String.prototype.trim !== "function") {
                 if (hasOwnProperty.call(options, 'height')) {
                     $ps_wrap.css('height', options.height);
                 }
+                if (hasOwnProperty.call(options, 'spectrum')) {
+                    if (typeof options.spectrum === "boolean") {
+                        if (options.spectrum) {
+                            $ps_range_bar.addClass('hidden');
+                            $ps_range_negative_spectrum_bar.removeClass('hidden');
+                            $ps_range_positive_spectrum_bar.removeClass('hidden');
+                        } else {
+                            $ps_range_bar.removeClass('hidden');
+                            $ps_range_negative_spectrum_bar.addClass('hidden');
+                            $ps_range_positive_spectrum_bar.addClass('hidden');
+                        }
+                    }
+                }
             }
         }
         initializeParts();
@@ -297,6 +310,51 @@ if (typeof String.prototype.trim !== "function") {
                 .addClass('ps-transition')
                 .on('transitionend', removeTransitionClass);
             transition_class_added = true;
+        }
+        function updateSpectrumBars() {
+            var side_allowance, sb_style;
+            switch (type) {
+            case 'horizontal':
+                sb_style = $ps_range_positive_spectrum_bar[0].style;
+                if (properties.min >= 0) {
+                    side_allowance = $ps_toggle_neck.outerWidth() / 2;
+                    sb_style.setProperty('margin-left', -side_allowance + 'px', 'important');
+                    sb_style.setProperty('border-left-width', side_allowance + 'px', 'important');
+                } else {
+                    sb_style.marginLeft = '';
+                    sb_style.borderLeftWidth = '';
+                }
+                sb_style = $ps_range_negative_spectrum_bar[0].style;
+                if (properties.max <= 0) {
+                    side_allowance = $ps_toggle_neck.outerWidth() / 2;
+                    sb_style.setProperty('margin-right', -side_allowance + 'px', 'important');
+                    sb_style.setProperty('border-right-width', side_allowance + 'px', 'important');
+                } else {
+                    sb_style.marginRight = '';
+                    sb_style.borderRightWidth = '';
+                }
+                break;
+            case 'vertical':
+                sb_style = $ps_range_positive_spectrum_bar[0].style;
+                if (properties.min >= 0) {
+                    side_allowance = $ps_toggle_neck.outerHeight() / 2;
+                    sb_style.setProperty('margin-bottom', -side_allowance + 'px', 'important');
+                    sb_style.setProperty('border-bottom-width', side_allowance + 'px', 'important');
+                } else {
+                    sb_style.marginBottom = '';
+                    sb_style.borderBottomWidth = '';
+                }
+                sb_style = $ps_range_negative_spectrum_bar[0].style;
+                if (properties.max <= 0) {
+                    side_allowance = $ps_toggle_neck.outerHeight() / 2;
+                    sb_style.setProperty('margin-top', -side_allowance + 'px', 'important');
+                    sb_style.setProperty('border-top-width', side_allowance + 'px', 'important');
+                } else {
+                    sb_style.marginTop = '';
+                    sb_style.borderTopWidth = '';
+                }
+                break;
+            }
         }
         // refresh, uh, refreshes the slider's UI
         function refresh(update_controls, animate) {
@@ -327,6 +385,7 @@ if (typeof String.prototype.trim !== "function") {
                 $ps_toggle_overlay_and_limiter.attr('style', 'top: ' + offset_ver + 'px !important; bottom: ' + offset_ver + 'px !important;');
                 break;
             }
+            updateSpectrumBars();
             if (update_controls) {
                 updateControls(animate);
             }
@@ -334,7 +393,7 @@ if (typeof String.prototype.trim !== "function") {
         }
         // updateControls, uh, updates the slider controls
         function updateControls(animate) {
-            var rate, value_sub, max_sub, min_sub, min_abs, min_max_length, nsb_offset, psb_offset;
+            var rate, value_sub, max_sub, min_sub, min_reverse_sign, min_max_length, nsb_offset, psb_offset, length_offset = 0;
             if ($ps_wrap[0].parentNode === null) {
                 return; // Bail out since it's not attached to the DOM
             }
@@ -349,25 +408,50 @@ if (typeof String.prototype.trim !== "function") {
             if (!!animate && (disabled === false) && (transition_class_added === false)) {
                 addTransitionClass();
             }
-            min_abs = Math.abs(min_sub);
-            min_max_length = (min_abs + Math.abs(max_sub));
-            psb_offset = (min_abs / min_max_length) * 100;
+            min_reverse_sign = min_sub * -1;
+            min_max_length = (min_reverse_sign + max_sub);
+            psb_offset = (min_reverse_sign / min_max_length) * 100;
             nsb_offset = 100 - psb_offset;
             switch (type) {
             case 'horizontal':
-                $ps_range_negative_spectrum_bar.css('right', nsb_offset + '%');
+                if (min_sub >= 0) {
+                    length_offset = psb_offset;
+                    psb_offset = 0;
+                }
                 $ps_range_positive_spectrum_bar.css('left', psb_offset + '%');
+                if (max_sub <= 0) {
+                    length_offset = nsb_offset;
+                    nsb_offset = 0;
+                }
+                $ps_range_negative_spectrum_bar.css('right', nsb_offset + '%');
                 if (value_sub < 0) {
-                    $ps_range_negative_spectrum_bar.css('width', ((Math.abs(value_sub) / min_max_length) * 100) + '%');
+                    $ps_range_negative_spectrum_bar.css('width', (((Math.abs(value_sub) / min_max_length) * 100) + length_offset) + '%');
                     $ps_range_positive_spectrum_bar.css('width', 0);
                 } else {
                     $ps_range_negative_spectrum_bar.css('width', 0);
-                    $ps_range_positive_spectrum_bar.css('width', ((value_sub / min_max_length) * 100) + '%');
+                    $ps_range_positive_spectrum_bar.css('width', (((value_sub / min_max_length) * 100) + length_offset) + '%');
                 }
                 $ps_range_bar.css('right', (100 - (rate * 100)) + '%');
                 $ps_toggle_neck.css('left', (rate * 100) + '%');
                 break;
             case 'vertical':
+                if (min_sub >= 0) {
+                    length_offset = psb_offset;
+                    psb_offset = 0;
+                }
+                $ps_range_positive_spectrum_bar.css('bottom', psb_offset + '%');
+                if (max_sub <= 0) {
+                    length_offset = nsb_offset;
+                    nsb_offset = 0;
+                }
+                $ps_range_negative_spectrum_bar.css('top', nsb_offset + '%');
+                if (value_sub < 0) {
+                    $ps_range_negative_spectrum_bar.css('height', (((Math.abs(value_sub) / min_max_length) * 100) + length_offset) + '%');
+                    $ps_range_positive_spectrum_bar.css('height', 0);
+                } else {
+                    $ps_range_negative_spectrum_bar.css('height', 0);
+                    $ps_range_positive_spectrum_bar.css('height', (((value_sub / min_max_length) * 100) + length_offset) + '%');
+                }
                 $ps_range_negative_spectrum_bar.css('top', nsb_offset + '%');
                 $ps_range_positive_spectrum_bar.css('bottom', psb_offset + '%');
                 $ps_range_bar.css('top', (100 - (rate * 100)) + '%');
@@ -403,6 +487,7 @@ if (typeof String.prototype.trim !== "function") {
                     val = Number(val) || 0;
                     if (Number.isFinite(val)) {
                         properties.min = val;
+                        updateSpectrumBars();
                         updateControls(animate);
                     }
                     return pebble_slider_object;
@@ -414,6 +499,7 @@ if (typeof String.prototype.trim !== "function") {
                     val = Number(val) || 0;
                     if (Number.isFinite(val)) {
                         properties.max = val;
+                        updateSpectrumBars();
                         updateControls(animate);
                     }
                     return pebble_slider_object;
@@ -440,6 +526,30 @@ if (typeof String.prototype.trim !== "function") {
                     return pebble_slider_object;
                 }
                 return properties.value;
+            },
+            toggleSpectrum: function toggleSpectrum(set) {
+                if (arguments.length > 0 && typeof set === "boolean") {
+                    if (!set) {
+                        $ps_range_bar.removeClass('hidden');
+                        $ps_range_negative_spectrum_bar.addClass('hidden');
+                        $ps_range_positive_spectrum_bar.addClass('hidden');
+                    } else {
+                        $ps_range_bar.addClass('hidden');
+                        $ps_range_negative_spectrum_bar.removeClass('hidden');
+                        $ps_range_positive_spectrum_bar.removeClass('hidden');
+                    }
+                } else {
+                    if ($ps_range_bar.hasClass('hidden')) {
+                        $ps_range_bar.removeClass('hidden');
+                        $ps_range_negative_spectrum_bar.addClass('hidden');
+                        $ps_range_positive_spectrum_bar.addClass('hidden');
+                    } else {
+                        $ps_range_bar.addClass('hidden');
+                        $ps_range_negative_spectrum_bar.removeClass('hidden');
+                        $ps_range_positive_spectrum_bar.removeClass('hidden');
+                    }
+                }
+                return pebble_slider_object;
             },
             attachTo: function attachTo(arg) {
                 $ps_wrap.appendTo(arg);

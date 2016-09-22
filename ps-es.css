@@ -81,6 +81,11 @@ span.pebble-slider span.ps-range-bar {
     position: absolute !important;
 }
 
+span.pebble-slider span.ps-range-negative-spectrum-bar,
+span.pebble-slider span.ps-range-positive-spectrum-bar {
+    border: solid transparent 0 !important;
+}
+
 span.pebble-slider span.ps-toggle-overlay-and-limiter {
     background: none !important;
     border: none !important;
@@ -188,13 +193,11 @@ span.pebble-slider.ps-vertical-type span.ps-range-positive-spectrum-bar {
 }
 
 span.pebble-slider.ps-vertical-type span.ps-range-negative-spectrum-bar {
-    bottom: auto !important;
-    top: 50% !important;
+    top: 50%;
 }
 
 span.pebble-slider.ps-vertical-type span.ps-range-positive-spectrum-bar {
-    bottom: 50% !important;
-    top: auto !important;
+    bottom: 50%;
 }
 
 span.pebble-slider.ps-vertical-type span.ps-range-bar {
@@ -221,4 +224,8 @@ span.pebble-slider.ps-vertical-type span.ps-toggle-neck {
     top: auto !important;
     left: 50% !important;
     right: auto !important;
+}
+
+span.pebble-slider span.hidden {
+    visibility: hidden !important;
 }
