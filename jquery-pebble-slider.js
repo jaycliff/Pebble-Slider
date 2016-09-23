@@ -506,22 +506,22 @@ if (typeof String.prototype.trim !== "function") {
                 }
                 return properties.maxRaw;
             },
-            val: function value(val, animate) {
+            val: function val(user_val, animate) {
                 var max_sub, min_sub, step_sub;
                 if (arguments.length > 0) {
                     max_sub = properties.max;
                     min_sub = properties.min;
                     step_sub = properties.step;
-                    val = valueByStep(Number(val) || 0, step_sub);
-                    if (val > max_sub) {
-                        val = valueByStep(max_sub, step_sub, 'floor');
+                    user_val = valueByStep(Number(user_val) || 0, step_sub);
+                    if (user_val > max_sub) {
+                        user_val = valueByStep(max_sub, step_sub, 'floor');
                     }
-                    if (val < min_sub) {
-                        val = min_sub;
+                    if (user_val< min_sub) {
+                        user_val = min_sub;
                     }
-                    properties.value = val;
-                    prev_input_value = val;
-                    prev_change_value = val;
+                    properties.value = user_val;
+                    prev_input_value = user_val;
+                    prev_change_value = user_val;
                     updateControls(animate);
                     return pebble_slider_object;
                 }
