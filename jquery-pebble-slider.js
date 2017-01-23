@@ -923,11 +923,11 @@ if (typeof String.prototype.trim !== "function") {
                 if (disabled === true) {
                     disabled = false;
                     // $pebble_slider_object's attached events should also be found on $ps_wrap's psWrapMetaControlHandler
-                    $pebble_slider_object.on('focus blur mousewheel DOMMouseScroll mousedown mouseup click keydown keyup keypress', psEventHandler);
+                    $pebble_slider_object.on('focus blur mousewheel DOMMouseScroll mousedown mousemove mouseup click touchstart touchmove touchend keydown keyup keypress', psEventHandler);
                     // Always attach psWrapMetaControlHandler first
                     $ps_wrap
                         .removeClass('disabled')
-                        .on('focus blur mousewheel DOMMouseScroll mousedown mouseup click keydown keyup keypress', psWrapMetaControlHandler)
+                        .on('focus blur mousewheel DOMMouseScroll mousedown mousemove mouseup click touchstart touchmove touchend keydown keyup keypress', psWrapMetaControlHandler)
                         .attr('tabindex', tab_index)
                         .on('mousedown touchstart', genericEventHandler)
                         .off('mousedown', enableDisableAid);
@@ -938,13 +938,13 @@ if (typeof String.prototype.trim !== "function") {
                 if (disabled === false) {
                     disabled = true;
                     // $pebble_slider_object's attached events should also be found on $ps_wrap's psWrapMetaControlHandler
-                    $pebble_slider_object.off('focus blur mousewheel DOMMouseScroll mousedown mouseup click keydown keyup keypress', psEventHandler);
+                    $pebble_slider_object.off('focus blur mousewheel DOMMouseScroll mousedown mousemove mouseup click touchstart touchmove touchend keydown keyup keypress', psEventHandler);
                     if (active) {
                         docWinEventHandler(); // Manually trigger the 'mouseup / window blur' event handler
                     }
                     $ps_wrap
                         .addClass('disabled')
-                        .off('focus blur mousewheel DOMMouseScroll mousedown mouseup click keydown keyup keypress', psWrapMetaControlHandler)
+                        .off('focus blur mousewheel DOMMouseScroll mousedown mousemove mouseup click touchstart touchmove touchend keydown keyup keypress', psWrapMetaControlHandler)
                         .removeAttr('tabindex')
                         .off('mousedown touchstart', genericEventHandler)
                         .on('mousedown', enableDisableAid);

@@ -84,17 +84,23 @@
                 //$button.off('', 456345);
             </script>
         </p>
-        <p id="container" style="padding: 0px; height: 150px;">
+        <p id="container" style="padding: 0px; height: 150px; overflow-y: auto;">
             <script type="text/javascript">
-                var slider = $.createPebbleSlider({ type: 'vertical', min: 1, max: 127 }).attachTo('#container');
+                var slider = $.createPebbleSlider({ type: 'vertical', min: 1, max: 127 }).attachTo('#container'), $container = $('#container').on('mousedown touchstart', function (event) { console.log('CONTAINER: ' + event.type); });
                 slider.getElement().css('height', '300px').attr('id', 'slider-1');
                 slider.on('input', function (event, value) {
                     value = value || this.value;
                     console.log('input: ' + value);
-                }).on('mousewheel focus', function (event) {
+                }).on('mousewheel focus touchstart', function (event) {
                     switch (event.type) {
+                    case 'touchstart':
+                        //event.preventDefault();
+                        event.stopPropagation();
+                        console.log('damn touchstart');
+                        break;
                     case 'mousewheel':
                         //event.preventDefault();
+                        console.log('damn mousewheel');
                         break;
                     case 'focus':
                         this.trigger('blur');
