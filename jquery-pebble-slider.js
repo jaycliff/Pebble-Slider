@@ -763,7 +763,7 @@ if (typeof String.prototype.trim !== "function") {
                         break;
                     case 'mousedown':
                         // Prevent manual mousedown trigger and disable right-click. Manually-triggered events don't have an 'originalEvent' property
-                        if (event.originalEvent === undef || event.which === 3 || is_default_prevented) {
+                        if (event.originalEvent === undef || event.which === 3) {
                             return;
                         }
                         event.preventDefault(); // This somehow disables text-selection
